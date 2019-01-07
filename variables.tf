@@ -1,5 +1,10 @@
 # Creation flags first
 
+variable "site_region" {
+    description = "Region in which to provision the site. Default: us-east-1"
+    default = "us-east-1"
+}
+
 variable "create_www_redirect_bucket" {
     description = "Defines whether or not to create a www redirect S3 bucket. Default: true"
     default = true
@@ -33,6 +38,5 @@ variable "codecommit_repo_name" {
     description = "CodeCommit repo name. If this is defined, it will be created with this name. If you do not define it, we'll create one that matches the name of site_tld variable."
     default = ""
 }
-
 
 # TODO: Support names for the rest of the resources?
