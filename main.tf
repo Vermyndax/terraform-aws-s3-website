@@ -60,7 +60,7 @@ resource "aws_s3_bucket" "site_www_redirect" {
 EOF
 
   website {
-    redirect_all_requests_to = "http://${var.site_tld}"
+    redirect_all_requests_to = "${var.site_tld}"
   }
   tags = {
     Website-redirect = "${var.site_tld}"
