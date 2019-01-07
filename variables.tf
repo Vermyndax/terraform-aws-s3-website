@@ -44,7 +44,7 @@ variable "root_page_object" {
     default = "index.html"
 }
 
-variable "root_page_object" {
+variable "error_page_object" {
     description = "The error page object for the Cloudfront/S3 distribution. Default: index.html"
     default = "404.html"
 }
