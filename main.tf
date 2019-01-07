@@ -26,8 +26,8 @@ resource "aws_s3_bucket" "main_site" {
 }
 EOF
     website {
-        index_document = "index.html"
-        error_document = "404.html"
+        index_document = "${var.root_page_object}"
+        error_document = "${var.error_page_object}"
     }
     # tags {
     # }
@@ -127,11 +127,47 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
 EOF
 }
 
-# CodeDeploy supporting projects
-
 # CodePipeline for deployment from Github to public site
 
 # CloudFront distribution
+# TODO: Add more parameterization
+
+resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
+  origin {
+    domain_name = "${aws_s3_bucket.main_site.bucket_regional_domain_name}"
+    origin_id = "${var.site_tld}"
+    s3_origin_config {}
+  }
+
+  enabled = true
+  default_root_object = "${var.root_page_object}"
+  aliases = ["${var.site_tld}", "www.${var.site_tld}"]
+  price_class = "${var.cloudfront_price_class}"
+  retain_on_delete = true
+  default_cache_behavior {
+    allowed_methods = [ "DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT" ]
+    cached_methods = [ "GET", "HEAD" ]
+    target_origin_id = "${var.site_tld}"
+    forwarded_values {
+      query_string = true
+      cookies {
+        forward = "none"
+      }
+    }
+    viewer_protocol_policy = "allow-all"
+    min_ttl = 0
+    default_ttl = 3600
+    max_ttl = 86400
+  }
+  viewer_certificate {
+    cloudfront_default_certificate = true
+  }
+  restrictions {
+    geo_restriction {
+      restriction_type = "none"
+    }
+  }
+}
 
 # DNS entry pointing to public site - optional
 
