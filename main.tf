@@ -37,7 +37,7 @@ EOF
 # S3 bucket for www redirect
 
 resource "aws_s3_bucket" "site_www_redirect" {
-  count = "${var.create_www_redirect_bucket == "true" ? 1 : 0}"
+  count = "${var.create_www_redirect_bucket == "true" ? 0 : 1}"
   bucket = "www.${var.site_tld}"
   region = "${var.site_region}"
   acl    = "public"
