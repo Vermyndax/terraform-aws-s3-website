@@ -35,6 +35,7 @@ EOF
 }
 
 # S3 bucket for www redirect (optional)
+# TODO: Restrict bucket access policies to just the CloudFront identity
 
 resource "aws_s3_bucket" "site_www_redirect" {
   count = "${var.create_www_redirect_bucket == "true" ? 0 : 1}"
