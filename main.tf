@@ -84,7 +84,7 @@ resource "aws_s3_bucket" "site_artifacts" {
 # CodeCommit repo (optional)
 
 resource "aws_codecommit_repository" "codecommit_site_repo" {
-  count = "${var.create_codecommit_repo}"
+  count = "${var.create_codecommit_repo == "true" ? 1 : 0}"
   repository_name = "${var.codecommit_repo_name != "" ? var.site_tld : var.codecommit_repo_name}"
   description     = "This is the default repo for ${var.site_tld}"
 }
