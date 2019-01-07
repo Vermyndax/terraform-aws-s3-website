@@ -39,4 +39,18 @@ variable "codecommit_repo_name" {
     default = ""
 }
 
+variable "root_page_object" {
+    description = "The root page object for the Cloudfront/S3 distribution. Default: index.html"
+    default = "index.html"
+}
+
+variable "root_page_object" {
+    description = "The error page object for the Cloudfront/S3 distribution. Default: index.html"
+    default = "404.html"
+}
+
+variable "cloudfront_price_class" {
+    description = "Price class for Cloudfront. Default: PriceClass_100"
+    default = "PriceClass_100"
+}
 # TODO: Support names for the rest of the resources?
