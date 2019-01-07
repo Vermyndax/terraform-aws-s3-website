@@ -34,7 +34,7 @@ EOF
     # force_destroy = true
 }
 
-# S3 bucket for www redirect
+# S3 bucket for www redirect (optional)
 
 resource "aws_s3_bucket" "site_www_redirect" {
   count = "${var.create_www_redirect_bucket == "true" ? 0 : 1}"
@@ -53,7 +53,7 @@ resource "aws_s3_bucket" "site_www_redirect" {
 
 
 
-# S3 bucket for website artifacts (?)
+# S3 bucket for website artifacts
 
 resource "aws_s3_bucket" "site_artifacts" {
   bucket = "${var.site_tld}-codedeploy-artifacts"
@@ -75,6 +75,58 @@ resource "aws_codecommit_repository" "codecommit_site_repo" {
 
 # IAM roles for CodeCommit/CodeDeploy
 
+resource "aws_iam_role" "codepipeline_iam_role" {
+  name = "${var.site_tld}-codepipeline-role"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "codepipeline.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy" "codepipeline_policy" {
+  name = "${var.site_tld}-codepipeline-policy"
+  role = "${aws_iam_role.codepipeline_iam_role.id}"
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect":"Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:GetObjectVersion",
+        "s3:GetBucketVersioning"
+      ],
+      "Resource": [
+        "${aws_s3_bucket.site_artifacts.arn}",
+        "${aws_s3_bucket.site_artifacts.arn}/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "codebuild:BatchGetBuilds",
+        "codebuild:StartBuild"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+EOF
+}
+
 # CodeDeploy supporting projects
 
 # CodePipeline for deployment from Github to public site
@@ -82,3 +134,7 @@ resource "aws_codecommit_repository" "codecommit_site_repo" {
 # CloudFront distribution
 
 # DNS entry pointing to public site - optional
+
+# TODO: SNS to support notifications for commit and build events
+
+# TODO: Conditionally create KMS key for encryption on pipeline
