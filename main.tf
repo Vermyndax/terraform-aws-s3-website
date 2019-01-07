@@ -40,28 +40,12 @@ resource "aws_s3_bucket" "site_www_redirect" {
   count = "${var.create_www_redirect_bucket == "true" ? 0 : 1}"
   bucket = "www.${var.site_tld}"
   region = "${var.site_region}"
-  acl    = "public"
-  policy = <<EOF
-{
-  "Id": "bucket_policy_site",
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "s3_bucket_policy_website",
-      "Action": [
-        "s3:GetObject"
-      ],
-      "Effect": "Allow",
-      "Resource": "arn:aws:s3:::${var.site_tld}/*",
-      "Principal": "*"
-    }
-  ]
-}
-EOF
+  acl    = "private"
 
   website {
     redirect_all_requests_to = "${var.site_tld}"
   }
+
   tags = {
     Website-redirect = "${var.site_tld}"
   }
