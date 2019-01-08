@@ -6,6 +6,11 @@
 # CodeBuild/CodePipeline from: https://github.com/slalompdx/terraform-aws-codecommit-cicd/blob/master/main.tf
 # Support those authors and open source!
 
+# TODO: Add bucket for S3 logging
+# TODO: Add more parameterization to CloudFront
+# TODO: Add CloudFront logging to an S3 bucket
+# TODO: Add DNS record
+
 terraform {
   required_version = ">= 0.11.11" # 11-11 make a wish
 }
@@ -14,8 +19,6 @@ locals {
     site_codecommit_repo_name = "${var.codecommit_repo_name != "" ? var.codecommit_repo_name : var.site_tld}"
     site_tld_shortname = "${replace(var.site_tld, ".", "")}"
 }
-
-# TODO: Conditionally create KMS key for encryption on pipeline
 
 # S3 bucket for website, public hosting
 resource "aws_s3_bucket" "main_site" {
@@ -81,7 +84,6 @@ resource "aws_s3_bucket" "site_artifacts" {
   }
 }
 
-# TODO: Add bucket for S3 logging
 # Should give a parameter to create
 # CloudFront should accept a parameter for S3 logging bucket and if it doesn't exist, then create one
 
@@ -387,8 +389,6 @@ resource "aws_codepipeline" "site_codepipeline" {
 }
 
 # CloudFront distribution
-# TODO: Add more parameterization
-# TODO: Add logging to S3 bucket
 resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
   origin {
     domain_name = "${aws_s3_bucket.main_site.website_endpoint}"
