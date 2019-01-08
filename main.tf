@@ -6,9 +6,7 @@
 # CodeBuild/CodePipeline from: https://github.com/slalompdx/terraform-aws-codecommit-cicd/blob/master/main.tf
 # Support those authors and open source!
 
-# TODO: Add bucket for S3 logging
 # TODO: Add more parameterization to CloudFront
-# TODO: Add CloudFront logging to an S3 bucket
 # TODO: Add DNS record
 
 terraform {
