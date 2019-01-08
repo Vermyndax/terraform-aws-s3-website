@@ -5,7 +5,7 @@ terraform {
 # TODO: Conditionally create KMS key for encryption on pipeline
 
 # S3 bucket for website, public hosting
-# TODO: Add secret: https://github.com/ringods/terraform-website-s3-cloudfront-route53/blob/master/site-main/website_bucket_policy.json#L7
+# Secret idea/code from: https://github.com/ringods/terraform-website-s3-cloudfront-route53/blob/master/site-main/website_bucket_policy.json#L7
 resource "aws_s3_bucket" "main_site" {
     bucket = "${var.site_tld}"
     region = "${var.site_region}"
@@ -135,14 +135,11 @@ EOF
 
 # CodePipeline for deployment from Github to public site
 
-# TODO: Add more parameterization
-# TODO: Add logging to S3 bucket
+
 
 # CloudFront distribution
-# resource "aws_cloudfront_origin_access_identity" "origin_access_identity" {
-#   comment = "Origin access identity for ${var.site_tld}"
-# }
-
+# TODO: Add more parameterization
+# TODO: Add logging to S3 bucket
 resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
   origin {
     domain_name = "${aws_s3_bucket.main_site.website_endpoint}"
@@ -194,10 +191,10 @@ resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
   }
 }
 
-# DNS entry pointing to public site - optional
-
 # SNS to support notifications for commit and build events
 resource "aws_sns_topic" "sns_topic" {
   count = "${var.create_sns_topic == "true" ? 1 : 0}"
   name = "${var.sns_topic_name}"
 }
+
+# DNS entry pointing to public site - optional
