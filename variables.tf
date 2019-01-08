@@ -30,6 +30,10 @@ variable "create_cloudfront_distribution" {
     default = true
 }
 
+variable "log_include_cookies" {
+    description = "Defines whether or not CloudFront should log cookies. Default: false."
+    default = false
+}
 variable "create_sns_topic" {
     description = "Defines whether or not to create an SNS topic for notifications about events. Default: true."
     default = true
