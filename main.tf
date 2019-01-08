@@ -12,7 +12,7 @@ terraform {
 
 locals {
     site_codecommit_repo_name = "${var.codecommit_repo_name != "" ? var.codecommit_repo_name : var.site_tld}"
-    site_tld_shortname = "${replace(var.site_tld, "\\.$", "")}"
+    site_tld_shortname = "${replace(var.site_tld, ".", "")}"
 }
 
 # TODO: Conditionally create KMS key for encryption on pipeline
