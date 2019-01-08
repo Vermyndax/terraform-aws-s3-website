@@ -64,4 +64,8 @@ variable "cloudfront_price_class" {
     default = "PriceClass_100"
 }
 
+variable "acm_site_certificate_arn" {
+    description = "ARN of an ACM certificate to use for https on the CloudFront distribution. Required."
+}
+
 # TODO: Support names for the rest of the resources?
