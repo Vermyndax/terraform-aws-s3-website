@@ -1,11 +1,22 @@
+# Terraform module to set up a full S3 publishing pipeline and supporting resources. See README.md for usage.
+# Author: Jason Miller (jmiller@red-abstract.com) - https://galaxycow.com
+# This project is used on https://galaxycow.com for a Hugo publishing workflow.
+# Acknowledgements for code snippets:
+# Secret idea/code from: https://github.com/ringods/terraform-website-s3-cloudfront-route53/blob/master/site-main/website_bucket_policy.json
+# CodeBuild/CodePipeline from: https://github.com/slalompdx/terraform-aws-codecommit-cicd/blob/master/main.tf
+# Support those authors and open source!
+
 terraform {
   required_version = ">= 0.11.11" # 11-11 make a wish
+}
+
+locals {
+    site_codecommit_repo_name = "${var.codecommit_repo_name != "" ? var.codecommit_repo_name : var.site_tld}"
 }
 
 # TODO: Conditionally create KMS key for encryption on pipeline
 
 # S3 bucket for website, public hosting
-# Secret idea/code from: https://github.com/ringods/terraform-website-s3-cloudfront-route53/blob/master/site-main/website_bucket_policy.json#L7
 resource "aws_s3_bucket" "main_site" {
     bucket = "${var.site_tld}"
     region = "${var.site_region}"
@@ -76,8 +87,9 @@ resource "aws_s3_bucket" "site_artifacts" {
 # CodeCommit repo (optional)
 resource "aws_codecommit_repository" "codecommit_site_repo" {
   count = "${var.create_codecommit_repo == "true" ? 1 : 0}"
-  repository_name = "${var.codecommit_repo_name != "" ? var.codecommit_repo_name : var.site_tld}"
-  description     = "This is the default repo for ${var.site_tld}"
+  repository_name = "${local.site_codecommit_repo_name}"
+  description = "This is the default repo for ${var.site_tld}"
+  default_branch = "master"
 }
 
 # IAM roles for CodeCommit/CodeDeploy
@@ -133,9 +145,213 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
 EOF
 }
 
-# CodePipeline for deployment from Github to public site
+# CodePipeline for deployment from CodeCommit to public site
 
+resource "aws_kms_key" "codepipeline_kms_key" {
+  count = "${var.codepipeline_kms_key_arn == "" ? 1 : 0}"
+  description  = "KMS key to encrypt CodePipeline and S3 artifact bucket at rest for ${var.site_tld}"
+  deletion_window_in_days = 30
+  enable_key_rotation = "true"
+}
 
+resource "aws_kms_alias" "codepipeline_kms_key_name" {
+  count = "${var.codepipeline_kms_key_arn == "" ? 1 : 0}"
+  name = "codepipeline-${var.site_tld}"
+  target_key_id = "${aws_kms_key.codepipeline_kms_key.key_id}"
+}
+
+# CodeBuild IAM Permissions
+resource "aws_iam_role" "codebuild_assume_role" {
+  name = "${var.site_tld}-codebuild-role"
+
+  assume_role_policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "codebuild.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy" "codebuild_policy" {
+  name = "${var.site_tld}-codebuild-policy"
+  role = "${aws_iam_role.codebuild_assume_role.id}"
+
+  policy = <<POLICY
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+       "s3:PutObject",
+       "s3:GetObject",
+       "s3:GetObjectVersion",
+       "s3:GetBucketVersioning"
+      ],
+      "Resource": "*",
+      "Effect": "Allow"
+    },
+    {
+      "Effect": "Allow",
+      "Resource": [
+        "${aws_codebuild_project.build_project.id}"
+      ],
+      "Action": [
+        "codebuild:*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Resource": [
+        "*"
+      ],
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ]
+    },
+    {
+      "Action": [
+        "kms:DescribeKey",
+        "kms:GenerateDataKey*",
+        "kms:Encrypt",
+        "kms:ReEncrypt*",
+        "kms:Decrypt"
+      ],
+      "Resource": "${aws_kms_key.codepipeline_kms_key.arn}",
+      "Effect": "Allow"
+    }
+  ]
+}
+POLICY
+}
+
+resource "aws_codebuild_project" "build_project" {
+  name           = "${local.site_codecommit_repo_name}-build"
+  description    = "The CodeBuild build project for ${local.site_codecommit_repo_name}"
+  service_role   = "${aws_iam_role.codebuild_assume_role.arn}"
+  build_timeout  = "${var.build_timeout}"
+  encryption_key = "${aws_kms_key.codepipeline_kms_key.arn}"
+
+  artifacts {
+    type = "CODEPIPELINE"
+  }
+
+  environment {
+    compute_type    = "${var.build_compute_type}"
+    image           = "${var.build_image}"
+    type            = "LINUX_CONTAINER"
+    privileged_mode = "${var.build_privileged_override}"
+  }
+
+  source {
+    type      = "CODEPIPELINE"
+    buildspec = "${var.package_buildspec}"
+  }
+}
+
+resource "aws_codebuild_project" "test_project" {
+  name           = "${local.site_codecommit_repo_name}-test"
+  description    = "The CodeBuild test project for ${local.site_codecommit_repo_name}"
+  service_role   = "${aws_iam_role.codebuild_assume_role.arn}"
+  build_timeout  = "${var.build_timeout}"
+  encryption_key = "${aws_kms_key.codepipeline_kms_key.arn}"
+
+  artifacts {
+    type = "CODEPIPELINE"
+  }
+
+  environment {
+    compute_type    = "${var.build_compute_type}"
+    image           = "${var.build_image}"
+    type            = "LINUX_CONTAINER"
+    privileged_mode = "${var.build_privileged_override}"
+  }
+
+  source {
+    type      = "CODEPIPELINE"
+    buildspec = "${var.test_buildspec}"
+  }
+}
+
+# Stages are configured in the CodePipeline object below. Add stages and referring CodeBuild projects above as necessary. Note that by default, the test stage is commented out, today.
+resource "aws_codepipeline" "site_codepipeline" {
+  name = "${var.site_tld}-codepipeline-provisioner"
+  role_arn = "${aws_iam_role.codepipeline_iam_role.arn}"
+
+  artifact_store {
+    location = "${aws_s3_bucket.site_artifacts.bucket}"
+    type     = "S3"
+
+    encryption_key {
+      id   = "${aws_kms_alias.codepipeline_kms_key_name.arn}"
+      type = "KMS"
+    }
+  }
+
+  stage {
+    name = "Source"
+
+    action {
+      name             = "${var.site_tld}-source"
+      category         = "Source"
+      owner            = "AWS"
+      provider         = "CodeCommit"
+      version          = "1"
+      output_artifacts = ["${var.site_tld}-artifacts"]
+
+      configuration {
+        RepositoryName = "${local.site_codecommit_repo_name}"
+        BranchName = "master"
+      }
+    }
+  }
+
+# Uncomment below to enable the test stage.
+#   stage {
+#     name = "Test"
+
+#     action {
+#       name             = "Test"
+#       category         = "Test"
+#       owner            = "AWS"
+#       provider         = "CodeBuild"
+#       input_artifacts  = ["${var.site_tld}-artifacts"]
+#       output_artifacts = ["${var.site_tld}-tested"]
+#       version          = "1"
+
+#       configuration {
+#         ProjectName = "${aws_codebuild_project.test_project.name}"
+#       }
+#     }
+#   }
+
+  stage {
+    name = "Build"
+
+    action {
+      name            = "Build"
+      category        = "Build"
+      owner           = "AWS"
+      provider        = "CodeBuild"
+      input_artifacts = ["${var.site_tld}-artifacts"]
+      output_artifacts = ["${var.site_tld}-build"]
+      version         = "1"
+
+      configuration {
+        ProjectName = "${aws_codebuild_project.build_project.name}"
+      }
+    }
+  }
+}
 
 # CloudFront distribution
 # TODO: Add more parameterization
