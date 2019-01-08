@@ -8,23 +8,7 @@ resource "aws_s3_bucket" "main_site" {
     bucket = "${var.site_tld}"
     region = "${var.site_region}"
     acl = "private"
-    policy = <<EOF
-{
-  "Id": "bucket_policy_site",
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "s3_bucket_policy_website",
-      "Action": [
-        "s3:GetObject"
-      ],
-      "Effect": "Allow",
-      "Resource": "arn:aws:s3:::${var.site_tld}/*",
-      "Principal": "${aws_cloudfront_origin_access_identity.origin_access_identity.s3_canonical_user_id}"
-    }
-  ]
-}
-EOF
+
     website {
         index_document = "${var.root_page_object}"
         error_document = "${var.error_page_object}"
