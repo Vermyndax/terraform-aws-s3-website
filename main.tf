@@ -72,7 +72,7 @@ resource "aws_s3_bucket" "site_www_redirect" {
 
 # S3 bucket for website artifacts
 resource "aws_s3_bucket" "site_artifacts" {
-  bucket = "${var.site_tld}-codedeploy-artifacts"
+  bucket = "${var.site_tld}-code-artifacts"
   region = "${var.site_region}"
   acl    = "private"
 
