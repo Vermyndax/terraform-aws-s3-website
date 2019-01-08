@@ -23,7 +23,7 @@ resource "aws_s3_bucket" "main_site" {
       "Resource": "arn:aws:s3:::${var.site_tld}/*",
       "Principal": {
           "AWS":"*"
-        }
+        },
       "Condition": {
         "StringEquals": {
           "aws:UserAgent": "${var.site_secret}"
