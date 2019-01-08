@@ -73,6 +73,16 @@ variable "build_image" {
     default = "aws/codebuild/ubuntu-base:14.04"
 }
 
+variable "test_compute_type" {
+    description = "Build instance type to use for the CodeBuild project. Default: BUILD_GENERAL1_SMALL."
+    default = "BUILD_GENERAL1_SMALL"
+}
+
+variable "test_image" {
+    description = "Managed build image for CodeBuild. Default: aws/codebuild/ubuntu-base:14.04"
+    default = "aws/codebuild/ubuntu-base:14.04"
+}
+
 variable "build_privileged_override" {
   description = "Set the build privileged override to 'true' if you are not using a CodeBuild supported Docker base image. This is only relevant to building Docker images."
   default     = "false"
