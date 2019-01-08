@@ -292,8 +292,8 @@ resource "aws_codebuild_project" "test_project" {
   }
 
   environment {
-    compute_type    = "${var.build_compute_type}"
-    image           = "${var.build_image}"
+    compute_type    = "${var.test_compute_type}"
+    image           = "${var.test_image}"
     type            = "LINUX_CONTAINER"
     privileged_mode = "${var.build_privileged_override}"
   }
