@@ -44,6 +44,10 @@ variable "site_tld" {
     description = "TLD of the website you want to create. A bucket will be created that is named this. Note that the module will error out if this bucket already exists in AWS. Example: example.com"
 }
 
+variable "site_secret" {
+    description = "A secret to be used between S3 and CloudFront to manage web access. This will be put in the bucket policy and CloudFront distribution. Required."
+}
+
 variable "codecommit_repo_name" {
     description = "CodeCommit repo name. If this is defined, it will be created with this name. If you do not define it, we'll create one that matches the name of site_tld variable."
     default = ""
