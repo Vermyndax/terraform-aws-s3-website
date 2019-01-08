@@ -7,7 +7,7 @@ terraform {
 resource "aws_s3_bucket" "main_site" {
     bucket = "${var.site_tld}"
     region = "${var.site_region}"
-    acl = "public-read"
+    acl = "private"
     policy = <<EOF
 {
   "Id": "bucket_policy_site",
@@ -20,7 +20,7 @@ resource "aws_s3_bucket" "main_site" {
       ],
       "Effect": "Allow",
       "Resource": "arn:aws:s3:::${var.site_tld}/*",
-      "Principal": "*"
+      "Principal": "${aws_cloudfront_origin_access_identity.origin_access_identity.s3_canonical_user_id}"
     }
   ]
 }
