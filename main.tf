@@ -5,10 +5,10 @@ terraform {
 # TODO: Conditionally create KMS key for encryption on pipeline
 
 # S3 bucket for website, public hosting
+# TODO: Add secret: https://github.com/ringods/terraform-website-s3-cloudfront-route53/blob/master/site-main/website_bucket_policy.json#L7
 resource "aws_s3_bucket" "main_site" {
     bucket = "${var.site_tld}"
     region = "${var.site_region}"
-    acl = "private"
     policy = <<EOF
 {
   "Id": "bucket_policy_site",
@@ -21,7 +21,7 @@ resource "aws_s3_bucket" "main_site" {
       ],
       "Effect": "Allow",
       "Resource": "arn:aws:s3:::${var.site_tld}/*",
-      "Principal": {"CanonicalUser":"${aws_cloudfront_origin_access_identity.origin_access_identity.s3_canonical_user_id}"}
+      "Principal": {"AWS":"*"}
     }
   ]
 }
@@ -139,10 +139,18 @@ resource "aws_cloudfront_origin_access_identity" "origin_access_identity" {
 resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
   origin {
     domain_name = "${aws_s3_bucket.main_site.website_endpoint}"
-    origin_id = "${var.site_tld}"
-    s3_origin_config {
-        origin_access_identity = "${aws_cloudfront_origin_access_identity.origin_access_identity.cloudfront_access_identity_path}"
+    origin_id = "origin-bucket-${var.site_tld}"
+
+    custom_origin_config {
+      origin_protocol_policy = "http-only"
+      http_port              = "80"
+      https_port             = "443"
+      origin_ssl_protocols   = ["TLSv1", "TLSv1.1", "TLSv1.2"]
     }
+    
+    # s3_origin_config {
+    #     origin_access_identity = "${aws_cloudfront_origin_access_identity.origin_access_identity.cloudfront_access_identity_path}"
+    # }
   }
 
   enabled = true
