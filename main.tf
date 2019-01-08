@@ -146,7 +146,7 @@ resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
   }
 
   enabled = true
-  default_root_object = "${var.root_page_object}"
+#   default_root_object = "${var.root_page_object}"
   aliases = ["${var.site_tld}", "www.${var.site_tld}"]
   price_class = "${var.cloudfront_price_class}"
   retain_on_delete = true
