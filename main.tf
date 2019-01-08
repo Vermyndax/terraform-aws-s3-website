@@ -122,7 +122,7 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
   "Version": "2012-10-17",
   "Statement": [
     {
-      "Effect":"Allow",
+      "Effect": "Allow",
       "Action": [
         "s3:GetObject",
         "s3:GetObjectVersion",
@@ -132,6 +132,15 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
         "${aws_s3_bucket.site_artifacts.arn}",
         "${aws_s3_bucket.site_artifacts.arn}/*"
       ]
+    },
+    {
+        "Effect:" "Allow",
+        "Action": [
+            "codecommit:*"
+        ],
+        Resource": [
+            "${aws_codecommit_repository.codecommit_site_repo.arn}"
+        ]
     },
     {
       "Effect": "Allow",
