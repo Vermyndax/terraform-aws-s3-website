@@ -305,7 +305,7 @@ resource "aws_codepipeline" "site_codepipeline" {
     name = "Source"
 
     action {
-      name             = "${local.site_tld_shortname}-source"
+      name             = "Source"
       category         = "Source"
       owner            = "AWS"
       provider         = "CodeCommit"
