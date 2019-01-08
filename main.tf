@@ -84,6 +84,13 @@ resource "aws_s3_bucket" "site_artifacts" {
   }
 }
 
+# S3 bucket for CloudFront logging
+resource "aws_s3_bucket" "site_cloudfront_logs" {
+  bucket = "${var.site_tld}-cloudfront-logs"
+  region = "${var.site_region}"
+  acl    = "private"
+}
+
 # Should give a parameter to create
 # CloudFront should accept a parameter for S3 logging bucket and if it doesn't exist, then create one
 
@@ -405,6 +412,11 @@ resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
       name  = "User-Agent"
       value = "${var.site_secret}"
     }
+  }
+  logging_config = {
+    include_cookies = "${var.log_include_cookies}"
+    bucket          = "${aws_s3_bucket.site_cloudfront_logs.bucket_domain_name}"
+    prefix          = "${local.site_tld_shortname}-"
   }
 
   enabled = true
