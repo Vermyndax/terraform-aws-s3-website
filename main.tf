@@ -221,24 +221,36 @@ resource "aws_iam_role_policy" "codebuild_policy" {
       "Effect": "Allow"
     },
     {
-      "Effect": "Allow",
+      "Action:" [
+          "s3:*"
+      ],
+      "Resource:" [
+        "${aws_s3_bucket.site_artifacts.arn}",
+        "${aws_s3_bucket.site_artifacts.arn}/*",
+        "${aws_s3_bucket.main_site.arn}",
+        "${aws_s3_bucket.main_site.arn}/*"
+      ],
+      "Effect:" "Allow"
+    },
+    {
+      "Action": [
+        "codebuild:*"
+      ],
       "Resource": [
         "${aws_codebuild_project.build_project.id}"
       ],
-      "Action": [
-        "codebuild:*"
-      ]
+      "Effect": "Allow"
     },
     {
-      "Effect": "Allow",
-      "Resource": [
-        "*"
-      ],
       "Action": [
         "logs:CreateLogGroup",
         "logs:CreateLogStream",
         "logs:PutLogEvents"
-      ]
+      ],
+      "Resource": [
+        "*"
+      ],
+      "Effect": "Allow"
     },
     {
       "Action": [
