@@ -2,8 +2,9 @@ terraform {
   required_version = ">= 0.11.11" # 11-11 make a wish
 }
 
-# S3 bucket for website, public hosting
+# TODO: Conditionally create KMS key for encryption on pipeline
 
+# S3 bucket for website, public hosting
 resource "aws_s3_bucket" "main_site" {
     bucket = "${var.site_tld}"
     region = "${var.site_region}"
@@ -35,8 +36,6 @@ EOF
 }
 
 # S3 bucket for www redirect (optional)
-# TODO: Restrict bucket access policies to just the CloudFront identity
-
 resource "aws_s3_bucket" "site_www_redirect" {
   count = "${var.create_www_redirect_bucket == "true" ? 0 : 1}"
   bucket = "www.${var.site_tld}"
@@ -52,10 +51,7 @@ resource "aws_s3_bucket" "site_www_redirect" {
   }
 }
 
-
-
 # S3 bucket for website artifacts
-
 resource "aws_s3_bucket" "site_artifacts" {
   bucket = "${var.site_tld}-codedeploy-artifacts"
   region = "${var.site_region}"
@@ -66,8 +62,11 @@ resource "aws_s3_bucket" "site_artifacts" {
   }
 }
 
-# CodeCommit repo (optional)
+# TODO: Add bucket for S3 logging
+# Should give a parameter to create
+# CloudFront should accept a parameter for S3 logging bucket and if it doesn't exist, then create one
 
+# CodeCommit repo (optional)
 resource "aws_codecommit_repository" "codecommit_site_repo" {
   count = "${var.create_codecommit_repo == "true" ? 1 : 0}"
   repository_name = "${var.codecommit_repo_name != "" ? var.codecommit_repo_name : var.site_tld}"
@@ -75,7 +74,6 @@ resource "aws_codecommit_repository" "codecommit_site_repo" {
 }
 
 # IAM roles for CodeCommit/CodeDeploy
-
 resource "aws_iam_role" "codepipeline_iam_role" {
   name = "${var.site_tld}-codepipeline-role"
 
@@ -130,12 +128,15 @@ EOF
 
 # CodePipeline for deployment from Github to public site
 
-# CloudFront distribution
 # TODO: Add more parameterization
+# TODO: Add logging to S3 bucket
+# TODO: Add code to accept ACM certificate ARN for HTTPS
 
+# CloudFront distribution
 resource "aws_cloudfront_origin_access_identity" "origin_access_identity" {
   comment = "Origin access identity for ${var.site_tld}"
 }
+
 resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
   origin {
     domain_name = "${aws_s3_bucket.main_site.bucket_regional_domain_name}"
@@ -177,11 +178,8 @@ resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
 
 # DNS entry pointing to public site - optional
 
-# TODO: SNS to support notifications for commit and build events
-
+# SNS to support notifications for commit and build events
 resource "aws_sns_topic" "sns_topic" {
   count = "${var.create_sns_topic == "true" ? 1 : 0}"
   name = "${var.sns_topic_name}"
 }
-
-# TODO: Conditionally create KMS key for encryption on pipeline
