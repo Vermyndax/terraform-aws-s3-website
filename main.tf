@@ -179,4 +179,9 @@ resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
 
 # TODO: SNS to support notifications for commit and build events
 
+resource "aws_sns_topic" "sns_topic" {
+  count = "${var.create_sns_topic == "true" ? 1 : 0}"
+  name = "${var.sns_topic_name}"
+}
+
 # TODO: Conditionally create KMS key for encryption on pipeline

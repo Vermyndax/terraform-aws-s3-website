@@ -30,6 +30,16 @@ variable "create_cloudfront_distribution" {
     default = true
 }
 
+variable "create_sns_topic" {
+    description = "Defines whether or not to create an SNS topic for notifications about events. Default: true."
+    default = true
+}
+
+variable "sns_topic_name" {
+    description = "Name for the SNS topic."
+    default = ""
+}
+
 variable "site_tld" {
     description = "TLD of the website you want to create. A bucket will be created that is named this. Note that the module will error out if this bucket already exists in AWS. Example: example.com"
 }
@@ -53,4 +63,5 @@ variable "cloudfront_price_class" {
     description = "Price class for Cloudfront. Default: PriceClass_100"
     default = "PriceClass_100"
 }
+
 # TODO: Support names for the rest of the resources?
