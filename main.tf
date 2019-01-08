@@ -138,7 +138,7 @@ resource "aws_cloudfront_origin_access_identity" "origin_access_identity" {
 
 resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
   origin {
-    domain_name = "${aws_s3_bucket.main_site.bucket_regional_domain_name}"
+    domain_name = "${aws_s3_bucket.main_site.website_endpoint}"
     origin_id = "${var.site_tld}"
     s3_origin_config {
         origin_access_identity = "${aws_cloudfront_origin_access_identity.origin_access_identity.cloudfront_access_identity_path}"
