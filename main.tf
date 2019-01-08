@@ -93,6 +93,17 @@ resource "aws_codecommit_repository" "codecommit_site_repo" {
   default_branch = "master"
 }
 
+resource "aws_codecommit_trigger" "codecommit_notifications" {
+  depends_on      = ["aws_codecommit_repository.codecommit_site_repo", "aws_sns_topic.sns_topic"]
+  repository_name = "${local.site_codecommit_repo_name}"
+
+  trigger {
+    name            = "notifyevents"
+    events          = ["all"]
+    destination_arn = "${aws_sns_topic.sns_topic.arn}"
+  }
+}
+
 # IAM roles for CodeCommit/CodeDeploy
 resource "aws_iam_role" "codepipeline_iam_role" {
   name = "${var.site_tld}-codepipeline-role"
