@@ -152,13 +152,22 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
         "codecommit:ListRepositories"
       ],
       "Resource": "*"
+    },
+    {
+      "Action": [
+        "kms:DescribeKey",
+        "kms:GenerateDataKey*",
+        "kms:Encrypt",
+        "kms:ReEncrypt*",
+        "kms:Decrypt"
+      ],
+      "Resource": "${aws_kms_key.codepipeline_kms_key.arn}",
+      "Effect": "Allow"
     }
   ]
 }
 EOF
 }
-
-# CodePipeline for deployment from CodeCommit to public site
 
 resource "aws_kms_key" "codepipeline_kms_key" {
   count = "${var.codepipeline_kms_key_arn == "" ? 1 : 0}"
@@ -295,6 +304,7 @@ resource "aws_codebuild_project" "test_project" {
   }
 }
 
+# CodePipeline for deployment from CodeCommit to public site
 # Stages are configured in the CodePipeline object below. Add stages and referring CodeBuild projects above as necessary. Note that by default, the test stage is commented out, today.
 resource "aws_codepipeline" "site_codepipeline" {
   name = "${var.site_tld}-codepipeline-provisioner"
