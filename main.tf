@@ -130,7 +130,6 @@ EOF
 
 # TODO: Add more parameterization
 # TODO: Add logging to S3 bucket
-# TODO: Add code to accept ACM certificate ARN for HTTPS
 
 # CloudFront distribution
 resource "aws_cloudfront_origin_access_identity" "origin_access_identity" {
