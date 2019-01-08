@@ -161,7 +161,7 @@ resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
   default_cache_behavior {
     allowed_methods = [ "DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT" ]
     cached_methods = [ "GET", "HEAD" ]
-    target_origin_id = "${var.site_tld}"
+    target_origin_id = "origin-bucket-${var.site_tld}"
     forwarded_values {
       query_string = true
       cookies {
