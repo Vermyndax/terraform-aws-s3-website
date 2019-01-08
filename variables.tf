@@ -37,7 +37,7 @@ variable "create_sns_topic" {
 
 variable "sns_topic_name" {
     description = "Name for the SNS topic."
-    default = ""
+    default = "website-notifications"
 }
 
 variable "site_tld" {
