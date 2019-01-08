@@ -126,27 +126,21 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
       "Action": [
         "s3:GetObject",
         "s3:GetObjectVersion",
-        "s3:GetBucketVersioning"
+        "s3:GetBucketVersioning",
+        "codecommit:*"
       ],
       "Resource": [
         "${aws_s3_bucket.site_artifacts.arn}",
-        "${aws_s3_bucket.site_artifacts.arn}/*"
+        "${aws_s3_bucket.site_artifacts.arn}/*",
+        "${aws_codecommit_repository.codecommit_site_repo.arn}"
       ]
-    },
-    {
-        "Effect:" "Allow",
-        "Action": [
-            "codecommit:*"
-        ],
-        Resource": [
-            "${aws_codecommit_repository.codecommit_site_repo.arn}"
-        ]
     },
     {
       "Effect": "Allow",
       "Action": [
         "codebuild:BatchGetBuilds",
-        "codebuild:StartBuild"
+        "codebuild:StartBuild",
+        "codecommit:ListRepositories"
       ],
       "Resource": "*"
     }
