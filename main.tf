@@ -302,12 +302,12 @@ resource "aws_codepipeline" "site_codepipeline" {
     name = "Source"
 
     action {
-      name             = "${var.site_tld}-source"
+      name             = "${local.site_tld_shortname}-source"
       category         = "Source"
       owner            = "AWS"
       provider         = "CodeCommit"
       version          = "1"
-      output_artifacts = ["${var.site_tld}-artifacts"]
+      output_artifacts = ["${local.site_tld_shortname}-artifacts"]
 
       configuration {
         RepositoryName = "${local.site_codecommit_repo_name}"
@@ -315,25 +315,23 @@ resource "aws_codepipeline" "site_codepipeline" {
       }
     }
   }
+  stage {
+    name = "Test"
 
-# Uncomment below to enable the test stage.
-#   stage {
-#     name = "Test"
+    action {
+      name             = "Test"
+      category         = "Test"
+      owner            = "AWS"
+      provider         = "CodeBuild"
+      input_artifacts  = ["${local.site_tld_shortname}-artifacts"]
+      output_artifacts = ["${local.site_tld_shortname}-tested"]
+      version          = "1"
 
-#     action {
-#       name             = "Test"
-#       category         = "Test"
-#       owner            = "AWS"
-#       provider         = "CodeBuild"
-#       input_artifacts  = ["${var.site_tld}-artifacts"]
-#       output_artifacts = ["${var.site_tld}-tested"]
-#       version          = "1"
-
-#       configuration {
-#         ProjectName = "${aws_codebuild_project.test_project.name}"
-#       }
-#     }
-#   }
+      configuration {
+        ProjectName = "${aws_codebuild_project.test_project.name}"
+      }
+    }
+  }
 
   stage {
     name = "Build"
@@ -343,8 +341,8 @@ resource "aws_codepipeline" "site_codepipeline" {
       category        = "Build"
       owner           = "AWS"
       provider        = "CodeBuild"
-      input_artifacts = ["${var.site_tld}-artifacts"]
-      output_artifacts = ["${var.site_tld}-build"]
+      input_artifacts = ["${local.site_tld_shortname}-tested"]
+      output_artifacts = ["${local.site_tld_shortname}-build"]
       version         = "1"
 
       configuration {
