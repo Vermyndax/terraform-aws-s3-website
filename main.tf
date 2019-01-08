@@ -221,16 +221,16 @@ resource "aws_iam_role_policy" "codebuild_policy" {
       "Effect": "Allow"
     },
     {
-      "Action:" [
+      "Action": [
           "s3:*"
       ],
-      "Resource:" [
+      "Resource": [
         "${aws_s3_bucket.site_artifacts.arn}",
         "${aws_s3_bucket.site_artifacts.arn}/*",
         "${aws_s3_bucket.main_site.arn}",
         "${aws_s3_bucket.main_site.arn}/*"
       ],
-      "Effect:" "Allow"
+      "Effect": "Allow"
     },
     {
       "Action": [
