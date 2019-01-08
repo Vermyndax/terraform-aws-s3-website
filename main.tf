@@ -20,7 +20,7 @@ resource "aws_s3_bucket" "main_site" {
       ],
       "Effect": "Allow",
       "Resource": "arn:aws:s3:::${var.site_tld}/*",
-      "Principal": "${aws_cloudfront_origin_access_identity.origin_access_identity.s3_canonical_user_id}"
+      "Principal": {"CanonicalUser":"${aws_cloudfront_origin_access_identity.origin_access_identity.s3_canonical_user_id}"}
     }
   ]
 }
