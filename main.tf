@@ -7,7 +7,7 @@
 # Support those authors and open source!
 
 # TODO: Add more parameterization to CloudFront
-# TODO: Add DNS record
+# TODO: Add lifecycle policies to S3 buckets
 
 terraform {
   required_version = ">= 0.11.11" # 11-11 make a wish
@@ -57,7 +57,7 @@ EOF
 
 # S3 bucket for www redirect (optional)
 resource "aws_s3_bucket" "site_www_redirect" {
-  count = "${var.create_www_redirect_bucket == "true" ? 0 : 1}"
+  count = "${var.create_www_redirect_bucket == "true" ? 1 : 0}"
   bucket = "www.${var.site_tld}"
   region = "${var.site_region}"
   acl    = "private"
@@ -413,8 +413,8 @@ resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
   }
   logging_config = {
     include_cookies = "${var.log_include_cookies}"
-    bucket          = "${aws_s3_bucket.site_cloudfront_logs.bucket_domain_name}"
-    prefix          = "${local.site_tld_shortname}-"
+    bucket = "${aws_s3_bucket.site_cloudfront_logs.bucket_domain_name}"
+    prefix = "${local.site_tld_shortname}-"
   }
 
   enabled = true
@@ -457,3 +457,38 @@ resource "aws_sns_topic" "sns_topic" {
 }
 
 # DNS entry pointing to public site - optional
+
+resource "aws_route53_zone" "primary_site_tld" {
+  count = "${var.create_public_dns_zone == "true" ? 0 : 1}"  
+  name = "${var.site_tld}"
+}
+
+data "aws_route53_zone" "site_tld_selected" {
+  name = "${var.site_tld}."
+}
+
+resource "aws_route53_record" "site_tld_record" {
+  count = "${var.create_public_dns_site_record == "true" ? 0 : 1}"
+  zone_id = "${data.aws_route53_zone.site_tld_selected.zone_id}"
+  name = "${var.site_tld}."
+  type = "A"
+
+  alias {
+    name = "${aws_cloudfront_distribution.site_cloudfront_distribution.domain_name}"
+    zone_id = "${aws_cloudfront_distribution.site_cloudfront_distribution.zone_id}"
+    evaluate_target_health = false
+  }
+}
+
+resource "aws_route53_record" "site_www_record" {
+  count = "${var.create_public_dns_www_record == "true" ? 0 : 1}"
+  zone_id = "${data.aws_route53_zone.site_tld_selected.zone_id}"
+  name = "www.${var.site_tld}."
+  type = "A"
+
+  alias {
+    name = "${aws_s3_bucket.site_www_redirect.website_endpoint}"
+    zone_id = "${aws_s3_bucket.site_www_redirect.zone_id}"
+    evaluate_target_health = false
+  }
+}
