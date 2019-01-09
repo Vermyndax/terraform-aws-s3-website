@@ -488,7 +488,7 @@ resource "aws_route53_record" "site_www_record" {
 
   alias {
     name = "${aws_s3_bucket.site_www_redirect.website_endpoint}"
-    zone_id = "${aws_s3_bucket.site_www_redirect.zone_id}"
+    zone_id = "${aws_s3_bucket.site_www_redirect.hosted_zone_id}"
     evaluate_target_health = false
   }
 }
