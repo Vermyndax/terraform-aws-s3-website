@@ -10,21 +10,6 @@ variable "create_www_redirect_bucket" {
     default = true
 }
 
-variable "create_public_dns_zone" {
-    description = "Defines whether or not to create a hosted zone. Default: false."
-    default = false
-}
-
-variable "create_public_dns_site_record" {
-    description = "Defines whether or not to create DNS records for the site. Default: false."
-    default = false
-}
-
-variable "create_public_dns_www_record" {
-    description = "Defines whether or not to create a WWW DNS record for the site. Default: false."
-    default = false
-}
-
 variable "create_codecommit_repo" {
     description = "Defines whether or not to create a CodeCommit repo. Default: true. NOTE: If you choose false, early versions of this module likely require that you fork and modify the code to point the CodeDeploy/CodePipeline stuff to your own repo."
     default = true
@@ -61,6 +46,11 @@ variable "create_public_dns_zone" {
 variable "create_public_dns_site_record" {
     description = "If set to true, creates a public DNS record in your site_tld hosted zone. If you do not already have a hosted zone for this TLD, you should set create_public_dns_zone to true. Otherwise, this will try to create a record in an existing zone or fail. Default: true."
     default = "true"
+}
+
+variable "create_public_dns_www_record" {
+    description = "Defines whether or not to create a WWW DNS record for the site. Default: false."
+    default = false
 }
 
 variable "site_secret" {
