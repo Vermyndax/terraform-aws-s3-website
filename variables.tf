@@ -64,7 +64,7 @@ variable "create_public_dns_site_record" {
 }
 
 variable "site_secret" {
-    description = "A secret to be used between S3 and CloudFront to manage web access. This will be put in the bucket policy and CloudFront distribution. Required."z
+    description = "A secret to be used between S3 and CloudFront to manage web access. This will be put in the bucket policy and CloudFront distribution. Required."
 }
 
 variable "codepipeline_kms_key_arn" {
