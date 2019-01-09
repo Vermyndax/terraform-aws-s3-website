@@ -10,13 +10,18 @@ variable "create_www_redirect_bucket" {
     default = true
 }
 
-variable "create_dns_hosted_zone" {
+variable "create_public_dns_zone" {
     description = "Defines whether or not to create a hosted zone. Default: false."
     default = false
 }
 
-variable "create_dns_record" {
+variable "create_public_dns_site_record" {
     description = "Defines whether or not to create DNS records for the site. Default: false."
+    default = false
+}
+
+variable "create_public_dns_www_record" {
+    description = "Defines whether or not to create a WWW DNS record for the site. Default: false."
     default = false
 }
 
@@ -48,8 +53,18 @@ variable "site_tld" {
     description = "TLD of the website you want to create. A bucket will be created that is named this. Note that the module will error out if this bucket already exists in AWS. Example: example.com"
 }
 
+variable "create_public_dns_zone" {
+    description = "If set to true, creates a public hosted zone in Route53 for your site. Default: false."
+    default = "false"
+}
+
+variable "create_public_dns_site_record" {
+    description = "If set to true, creates a public DNS record in your site_tld hosted zone. If you do not already have a hosted zone for this TLD, you should set create_public_dns_zone to true. Otherwise, this will try to create a record in an existing zone or fail. Default: true."
+    default = "true"
+}
+
 variable "site_secret" {
-    description = "A secret to be used between S3 and CloudFront to manage web access. This will be put in the bucket policy and CloudFront distribution. Required."
+    description = "A secret to be used between S3 and CloudFront to manage web access. This will be put in the bucket policy and CloudFront distribution. Required."z
 }
 
 variable "codepipeline_kms_key_arn" {
