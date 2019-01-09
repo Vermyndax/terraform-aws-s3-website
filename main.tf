@@ -459,7 +459,7 @@ resource "aws_sns_topic" "sns_topic" {
 # DNS entry pointing to public site - optional
 
 resource "aws_route53_zone" "primary_site_tld" {
-  count = "${var.create_public_dns_zone == "true" ? 0 : 1}"  
+  count = "${var.create_public_dns_zone == "true" ? 1 : 0}"  
   name = "${var.site_tld}"
 }
 
@@ -468,7 +468,7 @@ data "aws_route53_zone" "site_tld_selected" {
 }
 
 resource "aws_route53_record" "site_tld_record" {
-  count = "${var.create_public_dns_site_record == "true" ? 0 : 1}"
+  count = "${var.create_public_dns_site_record == "true" ? 1 : 0}"
   zone_id = "${data.aws_route53_zone.site_tld_selected.zone_id}"
   name = "${var.site_tld}."
   type = "A"
@@ -481,7 +481,7 @@ resource "aws_route53_record" "site_tld_record" {
 }
 
 resource "aws_route53_record" "site_www_record" {
-  count = "${var.create_public_dns_www_record == "true" ? 0 : 1}"
+  count = "${var.create_public_dns_www_record == "true" ? 1 : 0}"
   zone_id = "${data.aws_route53_zone.site_tld_selected.zone_id}"
   name = "www.${var.site_tld}."
   type = "A"
