@@ -480,7 +480,7 @@ PATTERN
 }
 
 resource "aws_cloudwatch_event_target" "sns" {
-  rule      = "${aws_cloudwatch_event_rule.pipeline_events}"
+  rule      = "${aws_cloudwatch_event_rule.pipeline_events.name}"
   target_id = "SendToSNS"
   arn       = "${aws_sns_topic.sns_topic.arn}"
 }
