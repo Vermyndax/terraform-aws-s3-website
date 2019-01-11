@@ -454,6 +454,7 @@ resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
 resource "aws_sns_topic" "sns_topic" {
   count = "${var.create_sns_topic == "true" ? 1 : 0}"
   name = "${var.sns_topic_name}"
+  kms_master_key_id = "alias/codepipeline-${local.site_tld_shortname}"
 }
 
 # DNS entry pointing to public site - optional
