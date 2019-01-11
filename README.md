@@ -32,7 +32,7 @@ First, create your Amazon certificate using the normal process. Note down the AR
 
 Next, create a secret that will be used between CloudFront and S3 to accept traffic. You can use openssl to generate a random secret for you like this:
 
-````
+````bash
 openssl rand -base64 36
 ````
 
@@ -40,7 +40,7 @@ This will generate a random string of 36 characters. Supply this string for "sit
 
 You'll integrate it into your existing Terraform stack by calling it with a module code block. It will look something like this the below chunk of code. This chunk of code creates a site for "example.com":
 
-````
+````json
 module "example_site" {
     source = "github.com/vermyndax/terraform-aws-s3-website"
     create_codecommit_repo = "true"
