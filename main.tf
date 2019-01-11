@@ -499,6 +499,25 @@ resource "aws_cloudwatch_event_target" "sns" {
   arn       = "${aws_sns_topic.sns_topic.arn}"
 }
 
+resource "aws_sns_topic_policy" "default_sns_policy" {
+  arn    = "${aws_sns_topic.sns_topic.arn}"
+  policy = "${data.aws_iam_policy_document.sns_topic_policy.json}"
+}
+
+data "aws_iam_policy_document" "sns_topic_policy" {
+  statement {
+    effect  = "Allow"
+    actions = ["SNS:Publish"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["events.amazonaws.com"]
+    }
+
+    resources = ["${aws_sns_topic.sns_topic.arn}"]
+  }
+}
+
 # DNS entry pointing to public site - optional
 
 resource "aws_route53_zone" "primary_site_tld" {
