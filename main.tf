@@ -457,6 +457,34 @@ resource "aws_sns_topic" "sns_topic" {
   kms_master_key_id = "alias/codepipeline-${local.site_tld_shortname}"
 }
 
+# SNS notifications for pipeline
+resource "aws_cloudwatch_event_rule" "pipeline_events" {
+  name        = "${local.site_tld_shortname}-pipeline-notifications"
+  description = "Alert on ${aws_codepipeline.site_codepipeline.name} events"
+
+  event_pattern = <<PATTERN
+{
+  "source": [
+    "aws.codepipeline"
+  ],
+  "detail-type": [
+    "CodePipeline Pipeline Execution State Change"
+  ],
+  "detail": {
+    "pipeline": [
+      "${aws_codepipeline.site_codepipeline.name}"
+    ]
+  }
+}
+PATTERN
+}
+
+resource "aws_cloudwatch_event_target" "sns" {
+  rule      = "${aws_cloudwatch_event_rule.pipeline_events}"
+  target_id = "SendToSNS"
+  arn       = "${aws_sns_topic.sns_topic.arn}"
+}
+
 # DNS entry pointing to public site - optional
 
 resource "aws_route53_zone" "primary_site_tld" {
