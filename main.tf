@@ -170,6 +170,13 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
       ],
       "Resource": "${aws_kms_key.codepipeline_kms_key.arn}",
       "Effect": "Allow"
+    },
+    {
+      "Action": [
+        "sns:Publish"
+      ],
+      "Resource": "${aws_sns_topic.sns_topic.arn}",
+      "Effect": "Allow"
     }
   ]
 }
@@ -268,6 +275,13 @@ resource "aws_iam_role_policy" "codebuild_policy" {
         "kms:Decrypt"
       ],
       "Resource": "${aws_kms_key.codepipeline_kms_key.arn}",
+      "Effect": "Allow"
+    },
+    {
+      "Action": [
+        "sns:Publish"
+      ],
+      "Resource": "${aws_sns_topic.sns_topic.arn}",
       "Effect": "Allow"
     }
   ]
