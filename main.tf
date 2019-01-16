@@ -545,12 +545,8 @@ resource "aws_route53_record" "site_tld_record" {
 resource "aws_route53_record" "site_www_record" {
   count = "${var.create_public_dns_www_record == "true" ? 1 : 0}"
   zone_id = "${data.aws_route53_zone.site_tld_selected.zone_id}"
-  name = "www.${var.site_tld}."
-  type = "A"
+  name = "www"
+  type = "CNAME"
 
-  alias {
-    name = "${aws_s3_bucket.site_www_redirect.website_endpoint}"
-    zone_id = "${aws_s3_bucket.site_www_redirect.hosted_zone_id}"
-    evaluate_target_health = false
-  }
+  records        = ["${var.site_tld}"]
 }
