@@ -547,6 +547,7 @@ resource "aws_route53_record" "site_www_record" {
   zone_id = "${data.aws_route53_zone.site_tld_selected.zone_id}"
   name = "www"
   type = "CNAME"
+  ttl = "5"
 
   records        = ["${var.site_tld}"]
 }
