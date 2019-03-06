@@ -288,7 +288,7 @@ resource "aws_iam_role_policy" "codebuild_policy" {
       "Action": [
         "cloudfront:CreateInvalidation"
       ],
-      "Resource": "${aws_cloudfront_distribution.site_cloudfront_distribution.id}",
+      "Resource": "${aws_cloudfront_distribution.site_cloudfront_distribution.arn}",
       "Effect": "Allow"
     }
   ]
