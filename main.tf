@@ -283,6 +283,13 @@ resource "aws_iam_role_policy" "codebuild_policy" {
       ],
       "Resource": "${aws_sns_topic.sns_topic.arn}",
       "Effect": "Allow"
+    },
+    {
+      "Action": [
+        "cloudfront:CreateInvalidation"
+      ],
+      "Resource": "${aws_cloudfront_distribution.site_cloudfront_distribution.id}",
+      "Effect": "Allow"
     }
   ]
 }
