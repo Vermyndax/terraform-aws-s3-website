@@ -14,14 +14,14 @@ terraform {
 }
 
 locals {
-  site_codecommit_repo_name = "${var.codecommit_repo_name != "" ? var.codecommit_repo_name : var.site_tld}"
-  site_tld_shortname        = "${replace(var.site_tld, ".", "")}"
+  site_codecommit_repo_name = var.codecommit_repo_name != "" ? var.codecommit_repo_name : var.site_tld
+  site_tld_shortname        = replace(var.site_tld, ".", "")
 }
 
 # S3 bucket for website, public hosting
 resource "aws_s3_bucket" "main_site" {
-  bucket = "${var.site_tld}"
-  region = "${var.site_region}"
+  bucket = var.site_tld
+  region = var.site_region
 
   policy = <<EOF
 {
@@ -48,11 +48,11 @@ resource "aws_s3_bucket" "main_site" {
 }
 EOF
 
-  website {
-    index_document = "${var.root_page_object}"
-    error_document = "${var.error_page_object}"
-  }
 
+  website {
+    index_document = var.root_page_object
+    error_document = var.error_page_object
+  }
   # tags {
   # }
   # force_destroy = true
@@ -60,35 +60,35 @@ EOF
 
 # S3 bucket for www redirect (optional)
 resource "aws_s3_bucket" "site_www_redirect" {
-  count  = "${var.create_www_redirect_bucket == "true" ? 1 : 0}"
+  count  = var.create_www_redirect_bucket == "true" ? 1 : 0
   bucket = "www.${var.site_tld}"
-  region = "${var.site_region}"
+  region = var.site_region
   acl    = "private"
 
   website {
-    redirect_all_requests_to = "${var.site_tld}"
+    redirect_all_requests_to = var.site_tld
   }
 
   tags = {
-    Website-redirect = "${var.site_tld}"
+    Website-redirect = var.site_tld
   }
 }
 
 # S3 bucket for website artifacts
 resource "aws_s3_bucket" "site_artifacts" {
   bucket = "${var.site_tld}-code-artifacts"
-  region = "${var.site_region}"
+  region = var.site_region
   acl    = "private"
 
   tags = {
-    Website-artifacts = "${var.site_tld}"
+    Website-artifacts = var.site_tld
   }
 }
 
 # S3 bucket for CloudFront logging
 resource "aws_s3_bucket" "site_cloudfront_logs" {
   bucket = "${var.site_tld}-cloudfront-logs"
-  region = "${var.site_region}"
+  region = var.site_region
   acl    = "private"
 }
 
@@ -97,20 +97,23 @@ resource "aws_s3_bucket" "site_cloudfront_logs" {
 
 # CodeCommit repo (optional)
 resource "aws_codecommit_repository" "codecommit_site_repo" {
-  count           = "${var.create_codecommit_repo == "true" ? 1 : 0}"
-  repository_name = "${local.site_codecommit_repo_name}"
+  count           = var.create_codecommit_repo == "true" ? 1 : 0
+  repository_name = local.site_codecommit_repo_name
   description     = "This is the default repo for ${var.site_tld}"
   default_branch  = "master"
 }
 
 resource "aws_codecommit_trigger" "codecommit_notifications" {
-  depends_on      = ["aws_codecommit_repository.codecommit_site_repo", "aws_sns_topic.sns_topic"]
-  repository_name = "${local.site_codecommit_repo_name}"
+  depends_on = [
+    aws_codecommit_repository.codecommit_site_repo,
+    aws_sns_topic.sns_topic,
+  ]
+  repository_name = local.site_codecommit_repo_name
 
   trigger {
     name            = "notifyevents"
     events          = ["all"]
-    destination_arn = "${aws_sns_topic.sns_topic.arn}"
+    destination_arn = aws_sns_topic.sns_topic[0].arn
   }
 }
 
@@ -132,11 +135,12 @@ resource "aws_iam_role" "codepipeline_iam_role" {
   ]
 }
 EOF
+
 }
 
 resource "aws_iam_role_policy" "codepipeline_policy" {
   name = "${var.site_tld}-codepipeline-policy"
-  role = "${aws_iam_role.codepipeline_iam_role.id}"
+  role = aws_iam_role.codepipeline_iam_role.id
 
   policy = <<EOF
 {
@@ -151,7 +155,7 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
       "Resource": [
         "${aws_s3_bucket.site_artifacts.arn}",
         "${aws_s3_bucket.site_artifacts.arn}/*",
-        "${aws_codecommit_repository.codecommit_site_repo.arn}"
+        "${aws_codecommit_repository.codecommit_site_repo[0].arn}"
       ]
     },
     {
@@ -171,32 +175,33 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
         "kms:ReEncrypt*",
         "kms:Decrypt"
       ],
-      "Resource": "${aws_kms_key.codepipeline_kms_key.arn}",
+      "Resource": "${aws_kms_key.codepipeline_kms_key[0].arn}",
       "Effect": "Allow"
     },
     {
       "Action": [
         "sns:Publish"
       ],
-      "Resource": "${aws_sns_topic.sns_topic.arn}",
+      "Resource": "${aws_sns_topic.sns_topic[0].arn}",
       "Effect": "Allow"
     }
   ]
 }
 EOF
+
 }
 
 resource "aws_kms_key" "codepipeline_kms_key" {
-  count                   = "${var.codepipeline_kms_key_arn == "" ? 1 : 0}"
+  count                   = var.codepipeline_kms_key_arn == "" ? 1 : 0
   description             = "KMS key to encrypt CodePipeline and S3 artifact bucket at rest for ${var.site_tld}"
   deletion_window_in_days = 30
   enable_key_rotation     = "true"
 }
 
 resource "aws_kms_alias" "codepipeline_kms_key_name" {
-  count         = "${var.codepipeline_kms_key_arn == "" ? 1 : 0}"
+  count         = var.codepipeline_kms_key_arn == "" ? 1 : 0
   name          = "alias/codepipeline-${local.site_tld_shortname}"
-  target_key_id = "${aws_kms_key.codepipeline_kms_key.key_id}"
+  target_key_id = aws_kms_key.codepipeline_kms_key[0].key_id
 }
 
 # CodeBuild IAM Permissions
@@ -217,11 +222,12 @@ resource "aws_iam_role" "codebuild_assume_role" {
   ]
 }
 EOF
+
 }
 
 resource "aws_iam_role_policy" "codebuild_policy" {
   name = "${var.site_tld}-codebuild-policy"
-  role = "${aws_iam_role.codebuild_assume_role.id}"
+  role = aws_iam_role.codebuild_assume_role.id
 
   policy = <<POLICY
 {
@@ -277,14 +283,14 @@ resource "aws_iam_role_policy" "codebuild_policy" {
         "kms:ReEncrypt*",
         "kms:Decrypt"
       ],
-      "Resource": "${aws_kms_key.codepipeline_kms_key.arn}",
+      "Resource": "${aws_kms_key.codepipeline_kms_key[0].arn}",
       "Effect": "Allow"
     },
     {
       "Action": [
         "sns:Publish"
       ],
-      "Resource": "${aws_sns_topic.sns_topic.arn}",
+      "Resource": "${aws_sns_topic.sns_topic[0].arn}",
       "Effect": "Allow"
     },
     {
@@ -297,53 +303,54 @@ resource "aws_iam_role_policy" "codebuild_policy" {
   ]
 }
 POLICY
+
 }
 
 resource "aws_codebuild_project" "build_project" {
   name           = "${local.site_tld_shortname}-build"
   description    = "The CodeBuild build project for ${local.site_codecommit_repo_name}"
-  service_role   = "${aws_iam_role.codebuild_assume_role.arn}"
-  build_timeout  = "${var.build_timeout}"
-  encryption_key = "${aws_kms_key.codepipeline_kms_key.arn}"
+  service_role   = aws_iam_role.codebuild_assume_role.arn
+  build_timeout  = var.build_timeout
+  encryption_key = aws_kms_key.codepipeline_kms_key[0].arn
 
   artifacts {
     type = "CODEPIPELINE"
   }
 
   environment {
-    compute_type    = "${var.build_compute_type}"
-    image           = "${var.build_image}"
+    compute_type    = var.build_compute_type
+    image           = var.build_image
     type            = "LINUX_CONTAINER"
-    privileged_mode = "${var.build_privileged_override}"
+    privileged_mode = var.build_privileged_override
   }
 
   source {
     type      = "CODEPIPELINE"
-    buildspec = "${var.package_buildspec}"
+    buildspec = var.package_buildspec
   }
 }
 
 resource "aws_codebuild_project" "test_project" {
   name           = "${local.site_tld_shortname}-test"
   description    = "The CodeBuild test project for ${local.site_codecommit_repo_name}"
-  service_role   = "${aws_iam_role.codebuild_assume_role.arn}"
-  build_timeout  = "${var.build_timeout}"
-  encryption_key = "${aws_kms_key.codepipeline_kms_key.arn}"
+  service_role   = aws_iam_role.codebuild_assume_role.arn
+  build_timeout  = var.build_timeout
+  encryption_key = aws_kms_key.codepipeline_kms_key[0].arn
 
   artifacts {
     type = "CODEPIPELINE"
   }
 
   environment {
-    compute_type    = "${var.test_compute_type}"
-    image           = "${var.test_image}"
+    compute_type    = var.test_compute_type
+    image           = var.test_image
     type            = "LINUX_CONTAINER"
-    privileged_mode = "${var.build_privileged_override}"
+    privileged_mode = var.build_privileged_override
   }
 
   source {
     type      = "CODEPIPELINE"
-    buildspec = "${var.test_buildspec}"
+    buildspec = var.test_buildspec
   }
 }
 
@@ -351,14 +358,14 @@ resource "aws_codebuild_project" "test_project" {
 # Stages are configured in the CodePipeline object below. Add stages and referring CodeBuild projects above as necessary. Note that by default, the test stage is commented out, today.
 resource "aws_codepipeline" "site_codepipeline" {
   name     = "${var.site_tld}-codepipeline-provisioner"
-  role_arn = "${aws_iam_role.codepipeline_iam_role.arn}"
+  role_arn = aws_iam_role.codepipeline_iam_role.arn
 
   artifact_store {
-    location = "${aws_s3_bucket.site_artifacts.bucket}"
+    location = aws_s3_bucket.site_artifacts.bucket
     type     = "S3"
 
     encryption_key {
-      id   = "${aws_kms_alias.codepipeline_kms_key_name.arn}"
+      id   = aws_kms_alias.codepipeline_kms_key_name[0].arn
       type = "KMS"
     }
   }
@@ -374,8 +381,8 @@ resource "aws_codepipeline" "site_codepipeline" {
       version          = "1"
       output_artifacts = ["${local.site_tld_shortname}-artifacts"]
 
-      configuration {
-        RepositoryName = "${local.site_codecommit_repo_name}"
+      configuration = {
+        RepositoryName = local.site_codecommit_repo_name
         BranchName     = "master"
       }
     }
@@ -393,8 +400,8 @@ resource "aws_codepipeline" "site_codepipeline" {
       output_artifacts = ["${local.site_tld_shortname}-tested"]
       version          = "1"
 
-      configuration {
-        ProjectName = "${aws_codebuild_project.test_project.name}"
+      configuration = {
+        ProjectName = aws_codebuild_project.test_project.name
       }
     }
   }
@@ -411,8 +418,8 @@ resource "aws_codepipeline" "site_codepipeline" {
       output_artifacts = ["${local.site_tld_shortname}-build"]
       version          = "1"
 
-      configuration {
-        ProjectName = "${aws_codebuild_project.build_project.name}"
+      configuration = {
+        ProjectName = aws_codebuild_project.build_project.name
       }
     }
   }
@@ -421,7 +428,7 @@ resource "aws_codepipeline" "site_codepipeline" {
 # CloudFront distribution
 resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
   origin {
-    domain_name = "${aws_s3_bucket.main_site.website_endpoint}"
+    domain_name = aws_s3_bucket.main_site.website_endpoint
     origin_id   = "origin-bucket-${var.site_tld}"
 
     custom_origin_config {
@@ -433,20 +440,20 @@ resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
 
     custom_header {
       name  = "User-Agent"
-      value = "${var.site_secret}"
+      value = var.site_secret
     }
   }
 
-  logging_config = {
-    include_cookies = "${var.log_include_cookies}"
-    bucket          = "${aws_s3_bucket.site_cloudfront_logs.bucket_domain_name}"
+  logging_config {
+    include_cookies = var.log_include_cookies
+    bucket          = aws_s3_bucket.site_cloudfront_logs.bucket_domain_name
     prefix          = "${local.site_tld_shortname}-"
   }
 
   enabled             = true
-  default_root_object = "${var.root_page_object}"
-  aliases             = ["${var.site_tld}", "www.${var.site_tld}"]
-  price_class         = "${var.cloudfront_price_class}"
+  default_root_object = var.root_page_object
+  aliases             = [var.site_tld, "www.${var.site_tld}"]
+  price_class         = var.cloudfront_price_class
   retain_on_delete    = true
 
   default_cache_behavior {
@@ -470,7 +477,7 @@ resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
   }
 
   viewer_certificate {
-    acm_certificate_arn      = "${var.acm_site_certificate_arn}"
+    acm_certificate_arn      = var.acm_site_certificate_arn
     ssl_support_method       = "sni-only"
     minimum_protocol_version = "TLSv1.1_2016"
   }
@@ -484,9 +491,8 @@ resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
 
 # SNS to support notifications for commit and build events
 resource "aws_sns_topic" "sns_topic" {
-  count = "${var.create_sns_topic == "true" ? 1 : 0}"
-  name  = "${var.sns_topic_name}"
-
+  count = var.create_sns_topic == "true" ? 1 : 0
+  name  = var.sns_topic_name
   # kms_master_key_id = "alias/codepipeline-${local.site_tld_shortname}"
 }
 
@@ -510,17 +516,18 @@ resource "aws_cloudwatch_event_rule" "pipeline_events" {
   }
 }
 PATTERN
+
 }
 
 resource "aws_cloudwatch_event_target" "sns" {
-  rule      = "${aws_cloudwatch_event_rule.pipeline_events.name}"
+  rule      = aws_cloudwatch_event_rule.pipeline_events.name
   target_id = "SendToSNS"
-  arn       = "${aws_sns_topic.sns_topic.arn}"
+  arn       = aws_sns_topic.sns_topic[0].arn
 }
 
 resource "aws_sns_topic_policy" "default_sns_policy" {
-  arn    = "${aws_sns_topic.sns_topic.arn}"
-  policy = "${data.aws_iam_policy_document.sns_topic_policy.json}"
+  arn    = aws_sns_topic.sns_topic[0].arn
+  policy = data.aws_iam_policy_document.sns_topic_policy.json
 }
 
 data "aws_iam_policy_document" "sns_topic_policy" {
@@ -533,15 +540,15 @@ data "aws_iam_policy_document" "sns_topic_policy" {
       identifiers = ["events.amazonaws.com"]
     }
 
-    resources = ["${aws_sns_topic.sns_topic.arn}"]
+    resources = [aws_sns_topic.sns_topic[0].arn]
   }
 }
 
 # DNS entry pointing to public site - optional
 
 resource "aws_route53_zone" "primary_site_tld" {
-  count = "${var.create_public_dns_zone == "true" ? 1 : 0}"
-  name  = "${var.site_tld}"
+  count = var.create_public_dns_zone == "true" ? 1 : 0
+  name  = var.site_tld
 }
 
 data "aws_route53_zone" "site_tld_selected" {
@@ -549,24 +556,25 @@ data "aws_route53_zone" "site_tld_selected" {
 }
 
 resource "aws_route53_record" "site_tld_record" {
-  count   = "${var.create_public_dns_site_record == "true" ? 1 : 0}"
-  zone_id = "${data.aws_route53_zone.site_tld_selected.zone_id}"
+  count   = var.create_public_dns_site_record == "true" ? 1 : 0
+  zone_id = data.aws_route53_zone.site_tld_selected.zone_id
   name    = "${var.site_tld}."
   type    = "A"
 
   alias {
-    name                   = "${aws_cloudfront_distribution.site_cloudfront_distribution.domain_name}"
-    zone_id                = "${aws_cloudfront_distribution.site_cloudfront_distribution.hosted_zone_id}"
+    name                   = aws_cloudfront_distribution.site_cloudfront_distribution.domain_name
+    zone_id                = aws_cloudfront_distribution.site_cloudfront_distribution.hosted_zone_id
     evaluate_target_health = false
   }
 }
 
 resource "aws_route53_record" "site_www_record" {
-  count   = "${var.create_public_dns_www_record == "true" ? 1 : 0}"
-  zone_id = "${data.aws_route53_zone.site_tld_selected.zone_id}"
+  count   = var.create_public_dns_www_record == "true" ? 1 : 0
+  zone_id = data.aws_route53_zone.site_tld_selected.zone_id
   name    = "www"
   type    = "CNAME"
   ttl     = "5"
 
-  records = ["${var.site_tld}"]
+  records = [var.site_tld]
 }
+
