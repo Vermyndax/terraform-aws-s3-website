@@ -537,7 +537,7 @@ data "aws_iam_policy_document" "sns_topic_policy" {
 
     principals {
       type        = "Service"
-      identifiers = ["events.amazonaws.com"]
+      identifiers = ["events.amazonaws.com", "codestar-notifications.amazonaws.com"]
     }
 
     resources = [aws_sns_topic.sns_topic[0].arn]
