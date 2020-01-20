@@ -1,0 +1,19 @@
+version: 0.2
+phases:
+  install:
+    commands:
+      - echo "install step"
+  pre_build:
+    commands:
+      - echo "pre_build step"
+      - cd $CODEBUILD_SRC_DIR
+      - ls -la
+  build:
+    commands:
+      - echo "build command - will rsync to public S3 bucket"
+      - cd $CODEBUILD_SRC_DIR
+      - aws s3 sync ./public s3://<bucketName>--delete
+  post_build:
+    commands:
+      - aws configure set preview.cloudfront true
+      - aws cloudfront create-invalidation --distribution-id <distributionID> --paths '/index.html'

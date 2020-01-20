@@ -91,6 +91,10 @@ Some variables are required and do not have default values. Those variables must
 | cloudfront_price_class         | Price class for CloudFront.                                                                                                                                                                                                                              | Yes      | PriceClass_100                  |
 | acm_site_certificate_arn       | ARN of an ACM certificate to use for https on the CloudFront distribution.                                                                                                                                                                               | Yes      | (empty)                         |
 
+## Hugo Website
+
+I use this module to deploy Hugo websites with CodeCommit/CodePipeline in an S3 bucket. Consult the folder: "examples/hugo_website" for a peek at the buildspec.yml files I use to accomplish that.
+
 ## Author
 
 Jason Miller - [jmiller@red-abstract.com](jmiller@red-abstract.com) - [http://galaxycow.com](http://galaxycow.com)
