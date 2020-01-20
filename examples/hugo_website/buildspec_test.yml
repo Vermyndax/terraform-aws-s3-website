@@ -1,0 +1,25 @@
+version: 0.2
+phases:
+  install:
+    commands:
+      - echo "install step"
+      - cd /tmp && wget https://github.com/gohugoio/hugo/releases/download/v0.62.2/hugo_0.62.2_Linux-64bit.deb
+      - dpkg -i hugo_0.62.2_Linux-64bit.deb
+  pre_build:
+    commands:
+      - echo "pre_build step - empty"
+  build:
+    commands:
+      - echo "build command"
+      - cd $CODEBUILD_SRC_DIR
+      - hugo version
+      - hugo -v --debug
+  post_build:
+    commands:
+      - echo "post_build step - empty"
+      - cd $CODEBUILD_SRC_DIR
+      - ls -la
+artifacts:
+  files:
+    - '**/*'
+  name: myname-$(date +%Y-%m-%d) 
