@@ -58,38 +58,51 @@ module "example_site" {
 }
 ````
 
-## Variables
+## Providers
 
-Some variables are required and do not have default values. Those variables must be filled in by you. Otherwise, you can accept the default values if they meet your needs.
+| Name | Version |
+|------|---------|
+| aws | n/a |
 
-| Variable                       | Description                                                                                                                                                                                                                                              | Required | Initial value                   |
-|--------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------|---------------------------------|
-| site_region                    | Region in which to provision the site.                                                                                                                                                                                                                   | Yes      | us-east-1                       |
-| create_www_redirect_bucket     | Defines whether or not to create a www redirect S3 bucket                                                                                                                                                                                                | Yes      | true                            |
-| create_codecommit_repo         | Defines whether or not to create a CodeCommit repo. Default: true. NOTE: If you choose false, early versions of this module likely require that you fork and modify the code to point the CodeDeploy/CodePipeline stuff to your own repo.                | Yes      | true                            |
-| create_cloudfront_distribution | Defines whether or not to create a CloudFront distribution for the S3 bucket.                                                                                                                                                                            | Yes      | true                            |
-| log_include_cookies            | Defines whether or not CloudFront should log cookies.                                                                                                                                                                                                    | Yes      | false                           |
-| create_sns_topic               | Defines whether or not to create an SNS topic for notifications about events.                                                                                                                                                                            | Yes      | true                            |
-| sns_topic_name                 | Name for the SNS topic                                                                                                                                                                                                                                   | No       | website-notifications           |
-| site_tld                       | TLD of the website you want to create. A bucket will be created that is named this. Note that the module will error out if this bucket already exists in AWS. Example: example.com                                                                       | Yes      | (empty)                         |
-| create_public_dns_zone         | If set to true, creates a public hosted zone in Route53 for your site.                                                                                                                                                                                   | Yes      | false                           |
-| create_public_dns_site_record  | If set to true, creates a public DNS record in your site_tld hosted zone. If you do not already have a hosted zone for this TLD, you should set create_public_dns_zone to true. Otherwise, this will try to create a record in an existing zone or fail. | Yes      | true                            |
-| create_public_dns_www_record   | Defines whether or not to create a WWW DNS record for the site.                                                                                                                                                                                          | Yes      | false                           |
-| site_secret                    | A secret to be used between S3 and CloudFront to manage web access. This will be put in the bucket policy and CloudFront distribution. Required.                                                                                                         | Yes      | (empty)                         |
-| codepipeline_kms_key_arn       | The ARN of a KMS key to use with the CodePipeline and S3 artifacts bucket. If you do not specify an ARN, we'll create a KMS key for you and use it.                                                                                                      | No       | (empty)                         |
-| codecommit_repo_name           | CodeCommit repo name. If this is defined, it will be created with this name. If you do not define it, we'll create one that matches the name of site_tld variable.                                                                                       | No       | (empty)                         |
-| build_timeout                  | Build timeout for the build stage (in minutes).                                                                                                                                                                                                          | Yes      | 5                               |
-| build_compute_type             | Build instance type to use for the CodeBuild project.                                                                                                                                                                                                    | Yes      | BUILD_GENERAL1_SMALL            |
-| build_image                    | Managed build image for CodeBuild.                                                                                                                                                                                                                       | Yes      | aws/codebuild/ubuntu-base:14.04 |
-| test_compute_type              | Build instance type to use for the CodeBuild project.                                                                                                                                                                                                    | Yes      | BUILD_GENERAL1_SMALL            |
-| test_image                     | Managed build image for CodeBuild.                                                                                                                                                                                                                       | Yes      | aws/codebuild/ubuntu-base:14.04 |
-| build_privileged_override      | Set the build privileged override to true if you are not using a CodeBuild supported Docker base image. This is only relevant to building Docker images.                                                                                                 | Yes      | false                           |
-| test_buildspec                 | The buildspec to be used for the Test stage (default: buildspec_test.yml). This file should exist in the root of your CodeCommit or Git repo.                                                                                                            | Yes      | buildspec_test.yml              |
-| package_buildspec              | The buildspec to be used for the Build stage (default: buildspec.yml). This file should exist in the root of your CodeCommit or Git repo.                                                                                                                | Yes      | buildspec.yml                   |
-| root_page_object               | The root page object for the Cloudfront/S3 distribution.                                                                                                                                                                                                 | Yes      | index.html                      |
-| error_page_object              | The error page object for the Cloudfront/S3 distribution.                                                                                                                                                                                                | Yes      | 404.html                        |
-| cloudfront_price_class         | Price class for CloudFront.                                                                                                                                                                                                                              | Yes      | PriceClass_100                  |
-| acm_site_certificate_arn       | ARN of an ACM certificate to use for https on the CloudFront distribution.                                                                                                                                                                               | Yes      | (empty)                         |
+## Inputs
+
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:-----:|
+| acm\_site\_certificate\_arn | ARN of an ACM certificate to use for https on the CloudFront distribution. Required. | `any` | n/a | yes |
+| build\_compute\_type | Build instance type to use for the CodeBuild project. Default: BUILD\_GENERAL1\_SMALL. | `string` | `"BUILD_GENERAL1_SMALL"` | no |
+| build\_image | Managed build image for CodeBuild. Default: aws/codebuild/ubuntu-base:14.04 | `string` | `"aws/codebuild/ubuntu-base:14.04"` | no |
+| build\_privileged\_override | Set the build privileged override to 'true' if you are not using a CodeBuild supported Docker base image. This is only relevant to building Docker images. | `string` | `"false"` | no |
+| build\_timeout | Build timeout for the build stage (in minutes). Default: 5 | `string` | `"5"` | no |
+| cloudfront\_price\_class | Price class for Cloudfront. Default: PriceClass\_100 | `string` | `"PriceClass_100"` | no |
+| codecommit\_repo\_name | CodeCommit repo name. If this is defined, it will be created with this name. If you do not define it, we'll create one that matches the name of site\_tld variable. | `string` | `""` | no |
+| codepipeline\_kms\_key\_arn | The ARN of a KMS key to use with the CodePipeline and S3 artifacts bucket. If you do not specify an ARN, we'll create a KMS key for you and use it. | `string` | `""` | no |
+| create\_cloudfront\_distribution | Defines whether or not to create a CloudFront distribution for the S3 bucket. Default: true. | `bool` | `true` | no |
+| create\_codecommit\_repo | Defines whether or not to create a CodeCommit repo. Default: true. NOTE: If you choose false, early versions of this module likely require that you fork and modify the code to point the CodeDeploy/CodePipeline stuff to your own repo. | `bool` | `true` | no |
+| create\_public\_dns\_site\_record | If set to true, creates a public DNS record in your site\_tld hosted zone. If you do not already have a hosted zone for this TLD, you should set create\_public\_dns\_zone to true. Otherwise, this will try to create a record in an existing zone or fail. Default: true. | `string` | `"true"` | no |
+| create\_public\_dns\_www\_record | Defines whether or not to create a WWW DNS record for the site. Default: false. | `bool` | `false` | no |
+| create\_public\_dns\_zone | If set to true, creates a public hosted zone in Route53 for your site. Default: false. | `string` | `"false"` | no |
+| create\_sns\_topic | Defines whether or not to create an SNS topic for notifications about events. Default: true. | `bool` | `true` | no |
+| create\_www\_redirect\_bucket | Defines whether or not to create a www redirect S3 bucket. Default: true | `bool` | `true` | no |
+| error\_page\_object | The error page object for the Cloudfront/S3 distribution. Default: 404.html | `string` | `"404.html"` | no |
+| log\_include\_cookies | Defines whether or not CloudFront should log cookies. Default: false. | `bool` | `false` | no |
+| package\_buildspec | The buildspec to be used for the Build stage (default: buildspec.yml). This file should exist in the root of your CodeCommit or Git repo. | `string` | `"buildspec.yml"` | no |
+| root\_page\_object | The root page object for the Cloudfront/S3 distribution. Default: index.html | `string` | `"index.html"` | no |
+| site\_region | Region in which to provision the site. Default: us-east-1 | `string` | `"us-east-1"` | no |
+| site\_secret | A secret to be used between S3 and CloudFront to manage web access. This will be put in the bucket policy and CloudFront distribution. Required. | `any` | n/a | yes |
+| site\_tld | TLD of the website you want to create. A bucket will be created that is named this. Note that the module will error out if this bucket already exists in AWS. Example: example.com | `any` | n/a | yes |
+| sns\_topic\_name | Name for the SNS topic. | `string` | `"website-notifications"` | no |
+| test\_buildspec | The buildspec to be used for the Test stage (default: buildspec\_test.yml). This file should exist in the root of your CodeCommit or Git repo. | `string` | `"buildspec_test.yml"` | no |
+| test\_compute\_type | Build instance type to use for the CodeBuild project. Default: BUILD\_GENERAL1\_SMALL. | `string` | `"BUILD_GENERAL1_SMALL"` | no |
+| test\_image | Managed build image for CodeBuild. Default: aws/codebuild/ubuntu-base:14.04 | `string` | `"aws/codebuild/ubuntu-base:14.04"` | no |
+
+## Outputs
+
+| Name | Description |
+|------|-------------|
+| codecommit\_repo\_arn | n/a |
+| codecommit\_repo\_clone\_url\_http | n/a |
+| codecommit\_repo\_clone\_url\_ssh | n/a |
+| codecommit\_repo\_id | n/a |
 
 ## Hugo Website
 
