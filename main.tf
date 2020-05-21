@@ -367,7 +367,9 @@ resource "aws_codepipeline" "site_codepipeline" {
     }
   }
 
-  ignore_changes = [stage[0]]
+  lifecycle {
+    ignore_changes = [stage[0]]
+  }
 
   # stage {
   #   name = "Source"
