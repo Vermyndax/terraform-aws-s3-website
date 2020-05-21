@@ -15,6 +15,17 @@ variable "create_codecommit_repo" {
   default     = true
 }
 
+variable "site_github_owner" {
+  description = "Owner ID of the Github Repo"
+  type        = string
+}
+
+variable "site_branch" {
+  description = "Branch to deploy"
+  type        = string
+  default     = "master"
+}
+
 variable "create_cloudfront_distribution" {
   description = "Defines whether or not to create a CloudFront distribution for the S3 bucket. Default: true."
   default     = true
