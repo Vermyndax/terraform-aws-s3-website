@@ -395,7 +395,7 @@ resource "aws_codepipeline" "site_codepipeline" {
       owner            = "ThirdParty"
       provider         = "GitHub"
       version          = "1"
-      output_artifacts = ["Source"]
+      output_artifacts = ["${local.site_tld_shortname}-artifacts"]
 
       configuration = {
         Owner      = var.site_github_owner
