@@ -14,8 +14,8 @@ terraform {
 }
 
 locals {
-  site_codecommit_repo_name = var.codecommit_repo_name != "" ? var.codecommit_repo_name : var.site_tld
-  site_tld_shortname        = replace(var.site_tld, ".", "")
+  # site_codecommit_repo_name = var.codecommit_repo_name != "" ? var.codecommit_repo_name : var.site_tld
+  site_tld_shortname = replace(var.site_tld, ".", "")
 }
 
 # S3 bucket for website, public hosting
@@ -96,26 +96,26 @@ resource "aws_s3_bucket" "site_cloudfront_logs" {
 # CloudFront should accept a parameter for S3 logging bucket and if it doesn't exist, then create one
 
 # CodeCommit repo (optional)
-resource "aws_codecommit_repository" "codecommit_site_repo" {
-  count           = var.create_codecommit_repo == "true" ? 1 : 0
-  repository_name = local.site_codecommit_repo_name
-  description     = "This is the default repo for ${var.site_tld}"
-  default_branch  = "master"
-}
+# resource "aws_codecommit_repository" "codecommit_site_repo" {
+#   count           = var.create_codecommit_repo == "true" ? 1 : 0
+#   repository_name = local.site_codecommit_repo_name
+#   description     = "This is the default repo for ${var.site_tld}"
+#   default_branch  = "master"
+# }
 
-resource "aws_codecommit_trigger" "codecommit_notifications" {
-  depends_on = [
-    aws_codecommit_repository.codecommit_site_repo,
-    aws_sns_topic.sns_topic,
-  ]
-  repository_name = local.site_codecommit_repo_name
+# resource "aws_codecommit_trigger" "codecommit_notifications" {
+#   depends_on = [
+#     aws_codecommit_repository.codecommit_site_repo,
+#     aws_sns_topic.sns_topic,
+#   ]
+#   repository_name = local.site_codecommit_repo_name
 
-  trigger {
-    name            = "notifyevents"
-    events          = ["all"]
-    destination_arn = aws_sns_topic.sns_topic[0].arn
-  }
-}
+#   trigger {
+#     name            = "notifyevents"
+#     events          = ["all"]
+#     destination_arn = aws_sns_topic.sns_topic[0].arn
+#   }
+# }
 
 # IAM roles for CodeCommit/CodeDeploy
 resource "aws_iam_role" "codepipeline_iam_role" {
@@ -149,21 +149,18 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
     {
       "Effect": "Allow",
       "Action": [
-        "s3:*",
-        "codecommit:*"
+        "s3:*"
       ],
       "Resource": [
         "${aws_s3_bucket.site_artifacts.arn}",
-        "${aws_s3_bucket.site_artifacts.arn}/*",
-        "${aws_codecommit_repository.codecommit_site_repo[0].arn}"
+        "${aws_s3_bucket.site_artifacts.arn}/*"
       ]
     },
     {
       "Effect": "Allow",
       "Action": [
         "codebuild:BatchGetBuilds",
-        "codebuild:StartBuild",
-        "codecommit:ListRepositories"
+        "codebuild:StartBuild"
       ],
       "Resource": "*"
     },
@@ -308,7 +305,7 @@ POLICY
 
 resource "aws_codebuild_project" "build_project" {
   name           = "${local.site_tld_shortname}-build"
-  description    = "The CodeBuild build project for ${local.site_codecommit_repo_name}"
+  description    = "The CodeBuild build project for ${var.site_tld}"
   service_role   = aws_iam_role.codebuild_assume_role.arn
   build_timeout  = var.build_timeout
   encryption_key = aws_kms_key.codepipeline_kms_key[0].arn
@@ -332,7 +329,7 @@ resource "aws_codebuild_project" "build_project" {
 
 resource "aws_codebuild_project" "test_project" {
   name           = "${local.site_tld_shortname}-test"
-  description    = "The CodeBuild test project for ${local.site_codecommit_repo_name}"
+  description    = "The CodeBuild test project for ${var.site_tld}"
   service_role   = aws_iam_role.codebuild_assume_role.arn
   build_timeout  = var.build_timeout
   encryption_key = aws_kms_key.codepipeline_kms_key[0].arn
@@ -354,7 +351,7 @@ resource "aws_codebuild_project" "test_project" {
   }
 }
 
-# CodePipeline for deployment from CodeCommit to public site
+# CodePipeline for deployment from GitHub to public site
 # Stages are configured in the CodePipeline object below. Add stages and referring CodeBuild projects above as necessary. Note that by default, the test stage is commented out, today.
 resource "aws_codepipeline" "site_codepipeline" {
   name     = "${var.site_tld}-codepipeline-provisioner"

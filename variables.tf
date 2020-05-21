@@ -10,10 +10,10 @@ variable "create_www_redirect_bucket" {
   default     = true
 }
 
-variable "create_codecommit_repo" {
-  description = "Defines whether or not to create a CodeCommit repo. Default: true. NOTE: If you choose false, early versions of this module likely require that you fork and modify the code to point the CodeDeploy/CodePipeline stuff to your own repo."
-  default     = true
-}
+# variable "create_codecommit_repo" {
+#   description = "Defines whether or not to create a CodeCommit repo. Default: true. NOTE: If you choose false, early versions of this module likely require that you fork and modify the code to point the CodeDeploy/CodePipeline stuff to your own repo."
+#   default     = true
+# }
 
 variable "site_github_owner" {
   description = "Owner ID of the Github Repo"
