@@ -10,7 +10,7 @@
 # TODO: Add lifecycle policies to S3 buckets
 
 terraform {
-  required_version = ">= 0.12.8" # I went to 12.8 and ugh might as well peel my nails off
+  required_version = ">= 0.12.25" # I went to 12.8 and ugh might as well peel my nails off
 }
 
 locals {
