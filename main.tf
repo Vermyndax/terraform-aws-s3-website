@@ -370,20 +370,41 @@ resource "aws_codepipeline" "site_codepipeline" {
     }
   }
 
+  # stage {
+  #   name = "Source"
+
+  #   action {
+  #     name             = "Source"
+  #     category         = "Source"
+  #     owner            = "AWS"
+  #     provider         = "CodeCommit"
+  #     version          = "1"
+  #     output_artifacts = ["${local.site_tld_shortname}-artifacts"]
+
+  #     configuration = {
+  #       RepositoryName = local.site_codecommit_repo_name
+  #       BranchName     = "master"
+  #     }
+  #   }
+  # }
+
   stage {
     name = "Source"
 
     action {
-      name             = "Source"
-      category         = "Source"
-      owner            = "AWS"
-      provider         = "CodeCommit"
+      name     = "Source"
+      category = "Source"
+
+      owner            = "ThirdParty"
+      provider         = "GitHub"
       version          = "1"
-      output_artifacts = ["${local.site_tld_shortname}-artifacts"]
+      output_artifacts = ["Source"]
 
       configuration = {
-        RepositoryName = local.site_codecommit_repo_name
-        BranchName     = "master"
+        Owner  = var.site_github_owner
+        Repo   = var.site_tld
+        Branch = var.site_branch
+        # OAuthToken = data.aws_ssm_parameter.github_pat.value
       }
     }
   }
