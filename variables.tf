@@ -20,6 +20,11 @@ variable "site_github_owner" {
   type        = string
 }
 
+variable "github_oauth_token" {
+  description = "Github oauth token"
+  type        = string
+}
+
 variable "site_branch" {
   description = "Branch to deploy"
   type        = string

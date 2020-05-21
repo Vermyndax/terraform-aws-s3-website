@@ -398,10 +398,10 @@ resource "aws_codepipeline" "site_codepipeline" {
       output_artifacts = ["Source"]
 
       configuration = {
-        Owner  = var.site_github_owner
-        Repo   = var.site_tld
-        Branch = var.site_branch
-        # OAuthToken = data.aws_ssm_parameter.github_pat.value
+        Owner      = var.site_github_owner
+        Repo       = var.site_tld
+        Branch     = var.site_branch
+        OAuthToken = var.github_oauth_token
       }
     }
   }
