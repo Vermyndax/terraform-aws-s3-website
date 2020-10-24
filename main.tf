@@ -21,7 +21,7 @@ locals {
 # S3 bucket for website, public hosting
 resource "aws_s3_bucket" "main_site" {
   bucket = var.site_tld
-  region = var.site_region
+  # region = var.site_region
 
   policy = <<EOF
 {
@@ -62,8 +62,8 @@ EOF
 resource "aws_s3_bucket" "site_www_redirect" {
   count  = var.create_www_redirect_bucket == "true" ? 1 : 0
   bucket = "www.${var.site_tld}"
-  region = var.site_region
-  acl    = "private"
+  # region = var.site_region
+  acl = "private"
 
   website {
     redirect_all_requests_to = var.site_tld
@@ -77,8 +77,8 @@ resource "aws_s3_bucket" "site_www_redirect" {
 # S3 bucket for website artifacts
 resource "aws_s3_bucket" "site_artifacts" {
   bucket = "${var.site_tld}-code-artifacts"
-  region = var.site_region
-  acl    = "private"
+  # region = var.site_region
+  acl = "private"
 
   tags = {
     Website-artifacts = var.site_tld
@@ -88,8 +88,8 @@ resource "aws_s3_bucket" "site_artifacts" {
 # S3 bucket for CloudFront logging
 resource "aws_s3_bucket" "site_cloudfront_logs" {
   bucket = "${var.site_tld}-cloudfront-logs"
-  region = var.site_region
-  acl    = "private"
+  # region = var.site_region
+  acl = "private"
 }
 
 # Should give a parameter to create
