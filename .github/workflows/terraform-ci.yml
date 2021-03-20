@@ -8,6 +8,7 @@ on:
 
 env:
   tf_in_automation: true
+  AWS_DEFAULT_REGION: us-east-1
 
 jobs:
   defaults:
