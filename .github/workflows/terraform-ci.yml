@@ -12,7 +12,7 @@ env:
 
 jobs:
   defaults:
-    name: "Terraform"
+    name: "Terraform CI Module Check"
     runs-on: ubuntu-latest
 
     steps:
