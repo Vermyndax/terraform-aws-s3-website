@@ -6,12 +6,6 @@ Terraform module that produces an S3 website plus supporting infrastructure for 
 
 * S3 bucket for the website hosting
 * S3 bucket for a www redirect
-* S3 bucket for CodeDeploy artifacts
-* S3 bucket for CloudFront logging
-* An optional CodeCommit repo
-* Supporting IAM roles
-* CodeBuild supporting projects
-* CodePipeline for deploying to your S3 bucket from a git repo
 * CloudFront distribution
 * A top-level zone for DNS (optional)
 * DNS entries pointing to the whole mess (optional)
@@ -49,11 +43,7 @@ module "example_site" {
     create_cloudfront_distribution = "true"
     site_github_owner = "<your-github-owner>"
     site_tld = "example.com"
-    create_sns_topic = "true"
-    sns_topic_name = "example-pipeline-notifications"
     acm_site_certificate_arn = "arn:aws:acm:us-east-1:111111111111:certificate/00000000-0000-0000-0000-000000000000"
-    site_secret = "asdiojasiopdjsajdasasdasdsadj"
-    build_image = "aws/codebuild/eb-python-3.4-amazonlinux-64:2.1.6"
     create_public_dns_zone = "false"
     create_public_dns_site_record = "true"
     create_public_dns_www_record = "true"
@@ -65,7 +55,6 @@ module "example_site" {
 
 | Name | Version |
 |------|---------|
-| terraform | >= 0.14.0 |
 | terraform | ~> 0.14.0 |
 
 ## Providers
@@ -84,21 +73,10 @@ No Modules.
 | Name |
 |------|
 | [aws_cloudfront_distribution](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution) |
-| [aws_cloudwatch_event_rule](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_rule) |
-| [aws_cloudwatch_event_target](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_target) |
-| [aws_codebuild_project](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/codebuild_project) |
-| [aws_codepipeline](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/codepipeline) |
-| [aws_iam_policy_document](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) |
-| [aws_iam_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) |
-| [aws_iam_role_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy) |
-| [aws_kms_alias](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_alias) |
-| [aws_kms_key](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_key) |
 | [aws_route53_record](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) |
 | [aws_route53_zone](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone) |
 | [aws_route53_zone](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_zone) |
 | [aws_s3_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) |
-| [aws_sns_topic](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic) |
-| [aws_sns_topic_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic_policy) |
 | [random_password](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) |
 | [random_uuid](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/uuid) |
 
