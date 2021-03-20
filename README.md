@@ -58,6 +58,7 @@ module "example_site" {
 }
 ````
 
+<!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Providers
 
 | Name | Version |
@@ -113,3 +114,5 @@ Jason Miller - [jmiller@red-abstract.com](jmiller@red-abstract.com) - [http://ga
 ## LICENSE & Contributors
 
 See LICENSE for license info. Contributions are welcome through pull requests.
+
+<!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
