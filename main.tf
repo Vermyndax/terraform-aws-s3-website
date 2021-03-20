@@ -100,7 +100,7 @@ resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
 
     custom_header {
       name  = "User-Agent"
-      value = var.site_secret
+      value = random_password.random_site_secret.result
     }
   }
 
