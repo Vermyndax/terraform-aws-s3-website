@@ -70,60 +70,6 @@ variable "create_public_dns_www_record" {
   default     = false
 }
 
-variable "site_secret" {
-  description = "A secret to be used between S3 and CloudFront to manage web access. This will be put in the bucket policy and CloudFront distribution. Required."
-}
-
-variable "codepipeline_kms_key_arn" {
-  description = "The ARN of a KMS key to use with the CodePipeline and S3 artifacts bucket. If you do not specify an ARN, we'll create a KMS key for you and use it."
-  default     = ""
-}
-
-variable "codecommit_repo_name" {
-  description = "CodeCommit repo name. If this is defined, it will be created with this name. If you do not define it, we'll create one that matches the name of site_tld variable."
-  default     = ""
-}
-
-variable "build_timeout" {
-  description = "Build timeout for the build stage (in minutes). Default: 5"
-  default     = "5"
-}
-
-variable "build_compute_type" {
-  description = "Build instance type to use for the CodeBuild project. Default: BUILD_GENERAL1_SMALL."
-  default     = "BUILD_GENERAL1_SMALL"
-}
-
-variable "build_image" {
-  description = "Managed build image for CodeBuild. Default: aws/codebuild/ubuntu-base:14.04"
-  default     = "aws/codebuild/ubuntu-base:14.04"
-}
-
-variable "test_compute_type" {
-  description = "Build instance type to use for the CodeBuild project. Default: BUILD_GENERAL1_SMALL."
-  default     = "BUILD_GENERAL1_SMALL"
-}
-
-variable "test_image" {
-  description = "Managed build image for CodeBuild. Default: aws/codebuild/ubuntu-base:14.04"
-  default     = "aws/codebuild/ubuntu-base:14.04"
-}
-
-variable "build_privileged_override" {
-  description = "Set the build privileged override to 'true' if you are not using a CodeBuild supported Docker base image. This is only relevant to building Docker images."
-  default     = "false"
-}
-
-variable "test_buildspec" {
-  description = "The buildspec to be used for the Test stage (default: buildspec_test.yml). This file should exist in the root of your CodeCommit or Git repo."
-  default     = "buildspec_test.yml"
-}
-
-variable "package_buildspec" {
-  description = "The buildspec to be used for the Build stage (default: buildspec.yml). This file should exist in the root of your CodeCommit or Git repo."
-  default     = "buildspec.yml"
-}
-
 variable "root_page_object" {
   description = "The root page object for the Cloudfront/S3 distribution. Default: index.html"
   default     = "index.html"
@@ -142,5 +88,3 @@ variable "cloudfront_price_class" {
 variable "acm_site_certificate_arn" {
   description = "ARN of an ACM certificate to use for https on the CloudFront distribution. Required."
 }
-
-# TODO: Support names for the rest of the resources?

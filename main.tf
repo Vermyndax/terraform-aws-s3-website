@@ -10,7 +10,7 @@
 # TODO: Add lifecycle policies to S3 buckets
 
 terraform {
-  required_version = ">= 0.12.25" # I went to 12.8 and ugh might as well peel my nails off
+  required_version = ">= 0.14.0" # I went to 12.8 and ugh might as well peel my nails off
 }
 
 locals {
@@ -18,9 +18,19 @@ locals {
   site_tld_shortname = replace(var.site_tld, ".", "")
 }
 
+resource "random_uuid" "random_bucket_name" {
+  # This will generate a random bucket name to avoid possible security issues.
+}
+
+resource "random_password" "random_site_secret" {
+  length           = 32
+  special          = true
+  override_special = "_%@"
+}
+
 # S3 bucket for website, public hosting
 resource "aws_s3_bucket" "main_site" {
-  bucket = var.site_tld
+  bucket = random_uuid.random_bucket_name.result
   # region = var.site_region
 
   policy = <<EOF
@@ -40,7 +50,7 @@ resource "aws_s3_bucket" "main_site" {
         },
       "Condition": {
         "StringEquals": {
-          "aws:UserAgent": "${var.site_secret}"
+          "aws:UserAgent": "${random_password.random_site_secret.result}"
         }
       }
     }

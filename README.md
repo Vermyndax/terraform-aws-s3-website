@@ -65,7 +65,7 @@ module "example_site" {
 
 | Name | Version |
 |------|---------|
-| terraform | >= 0.12.25 |
+| terraform | >= 0.14.0 |
 | terraform | ~> 0.14.0 |
 
 ## Providers
@@ -73,6 +73,7 @@ module "example_site" {
 | Name | Version |
 |------|---------|
 | aws | n/a |
+| random | n/a |
 
 ## Modules
 
@@ -98,19 +99,15 @@ No Modules.
 | [aws_s3_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) |
 | [aws_sns_topic](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic) |
 | [aws_sns_topic_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/sns_topic_policy) |
+| [random_password](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) |
+| [random_uuid](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/uuid) |
 
 ## Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | acm\_site\_certificate\_arn | ARN of an ACM certificate to use for https on the CloudFront distribution. Required. | `any` | n/a | yes |
-| build\_compute\_type | Build instance type to use for the CodeBuild project. Default: BUILD\_GENERAL1\_SMALL. | `string` | `"BUILD_GENERAL1_SMALL"` | no |
-| build\_image | Managed build image for CodeBuild. Default: aws/codebuild/ubuntu-base:14.04 | `string` | `"aws/codebuild/ubuntu-base:14.04"` | no |
-| build\_privileged\_override | Set the build privileged override to 'true' if you are not using a CodeBuild supported Docker base image. This is only relevant to building Docker images. | `string` | `"false"` | no |
-| build\_timeout | Build timeout for the build stage (in minutes). Default: 5 | `string` | `"5"` | no |
 | cloudfront\_price\_class | Price class for Cloudfront. Default: PriceClass\_100 | `string` | `"PriceClass_100"` | no |
-| codecommit\_repo\_name | CodeCommit repo name. If this is defined, it will be created with this name. If you do not define it, we'll create one that matches the name of site\_tld variable. | `string` | `""` | no |
-| codepipeline\_kms\_key\_arn | The ARN of a KMS key to use with the CodePipeline and S3 artifacts bucket. If you do not specify an ARN, we'll create a KMS key for you and use it. | `string` | `""` | no |
 | create\_cloudfront\_distribution | Defines whether or not to create a CloudFront distribution for the S3 bucket. Default: true. | `bool` | `true` | no |
 | create\_public\_dns\_site\_record | If set to true, creates a public DNS record in your site\_tld hosted zone. If you do not already have a hosted zone for this TLD, you should set create\_public\_dns\_zone to true. Otherwise, this will try to create a record in an existing zone or fail. Default: true. | `string` | `"true"` | no |
 | create\_public\_dns\_www\_record | Defines whether or not to create a WWW DNS record for the site. Default: false. | `bool` | `false` | no |
@@ -120,17 +117,12 @@ No Modules.
 | error\_page\_object | The error page object for the Cloudfront/S3 distribution. Default: 404.html | `string` | `"404.html"` | no |
 | github\_oauth\_token | Github oauth token | `string` | n/a | yes |
 | log\_include\_cookies | Defines whether or not CloudFront should log cookies. Default: false. | `bool` | `false` | no |
-| package\_buildspec | The buildspec to be used for the Build stage (default: buildspec.yml). This file should exist in the root of your CodeCommit or Git repo. | `string` | `"buildspec.yml"` | no |
 | root\_page\_object | The root page object for the Cloudfront/S3 distribution. Default: index.html | `string` | `"index.html"` | no |
 | site\_branch | Branch to deploy | `string` | `"master"` | no |
 | site\_github\_owner | Owner ID of the Github Repo | `string` | n/a | yes |
 | site\_region | Region in which to provision the site. Default: us-east-1 | `string` | `"us-east-1"` | no |
-| site\_secret | A secret to be used between S3 and CloudFront to manage web access. This will be put in the bucket policy and CloudFront distribution. Required. | `any` | n/a | yes |
 | site\_tld | TLD of the website you want to create. A bucket will be created that is named this. Note that the module will error out if this bucket already exists in AWS. Example: example.com | `any` | n/a | yes |
 | sns\_topic\_name | Name for the SNS topic. | `string` | `"website-notifications"` | no |
-| test\_buildspec | The buildspec to be used for the Test stage (default: buildspec\_test.yml). This file should exist in the root of your CodeCommit or Git repo. | `string` | `"buildspec_test.yml"` | no |
-| test\_compute\_type | Build instance type to use for the CodeBuild project. Default: BUILD\_GENERAL1\_SMALL. | `string` | `"BUILD_GENERAL1_SMALL"` | no |
-| test\_image | Managed build image for CodeBuild. Default: aws/codebuild/ubuntu-base:14.04 | `string` | `"aws/codebuild/ubuntu-base:14.04"` | no |
 
 ## Outputs
 
