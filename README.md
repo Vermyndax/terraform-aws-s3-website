@@ -8,6 +8,7 @@
 
 * Added a public access block for the CloudFront logging bucket.
 * Updated to TLSv1.2_2019 on CloudFront distribution.
+* Fix adding canonical ID for CloudFront logging on the bucket.
 
 ### 03/20/21
 
@@ -58,16 +59,16 @@ module "example_site" {
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ## Requirements
 
-| Name      | Version   |
-| --------- | --------- |
+| Name | Version |
+|------|---------|
 | terraform | ~> 0.14.0 |
 
 ## Providers
 
-| Name   | Version |
-| ------ | ------- |
-| aws    | n/a     |
-| random | n/a     |
+| Name | Version |
+|------|---------|
+| aws | n/a |
+| random | n/a |
 
 ## Modules
 
@@ -75,35 +76,35 @@ No Modules.
 
 ## Resources
 
-| Name                                                                                                                                           |
-| ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| [aws_cloudfront_distribution](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution)             |
-| [aws_route53_record](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record)                               |
-| [aws_route53_zone](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone)                                |
-| [aws_route53_zone](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_zone)                                   |
-| [aws_s3_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket)                                         |
+| Name |
+|------|
+| [aws_cloudfront_distribution](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_distribution) |
+| [aws_route53_record](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) |
+| [aws_route53_zone](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone) |
+| [aws_route53_zone](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_zone) |
+| [aws_s3_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) |
 | [aws_s3_bucket_public_access_block](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_public_access_block) |
-| [random_password](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password)                                     |
-| [random_uuid](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/uuid)                                             |
+| [random_password](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) |
+| [random_uuid](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/uuid) |
 
 ## Inputs
 
-| Name                              | Description                                                                                                                                                                                                                                                  | Type     | Default                   | Required |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------- | ------------------------- | :------: |
-| acm\_site\_certificate\_arn       | ARN of an ACM certificate to use for https on the CloudFront distribution.                                                                                                                                                                                   | `any`    | n/a                       |   yes    |
-| cloudfront\_price\_class          | Price class for Cloudfront.                                                                                                                                                                                                                                  | `string` | `"PriceClass_100"`        |    no    |
-| create\_cloudfront\_distribution  | Defines whether or not to create a CloudFront distribution for the S3 bucket.                                                                                                                                                                                | `bool`   | `true`                    |    no    |
-| create\_public\_dns\_site\_record | If set to true, creates a public DNS record in your site\_tld hosted zone. If you do not already have a hosted zone for this TLD, you should set create\_public\_dns\_zone to true. Otherwise, this will try to create a record in an existing zone or fail. | `string` | `"true"`                  |    no    |
-| create\_public\_dns\_www\_record  | Defines whether or not to create a WWW DNS record for the site.                                                                                                                                                                                              | `bool`   | `false`                   |    no    |
-| create\_public\_dns\_zone         | If set to true, creates a public hosted zone in Route53 for your site.                                                                                                                                                                                       | `string` | `"false"`                 |    no    |
-| create\_sns\_topic                | Defines whether or not to create an SNS topic for notifications about events.                                                                                                                                                                                | `bool`   | `false`                   |    no    |
-| create\_www\_redirect\_bucket     | Defines whether or not to create a www redirect S3 bucket. Default: true                                                                                                                                                                                     | `bool`   | `true`                    |    no    |
-| error\_page\_object               | The error page object for the Cloudfront/S3 distribution.                                                                                                                                                                                                    | `string` | `"404.html"`              |    no    |
-| log\_include\_cookies             | Defines whether or not CloudFront should log cookies. Default: false.                                                                                                                                                                                        | `bool`   | `false`                   |    no    |
-| root\_page\_object                | The root page object for the Cloudfront/S3 distribution.                                                                                                                                                                                                     | `string` | `"index.html"`            |    no    |
-| site\_region                      | Region in which to provision the site. Default: us-east-1                                                                                                                                                                                                    | `string` | `"us-east-1"`             |    no    |
-| site\_tld                         | TLD of the website you want to create. A bucket will be created that is named this. Note that the module will error out if this bucket already exists in AWS. Example: example.com                                                                           | `any`    | n/a                       |   yes    |
-| sns\_topic\_name                  | Name for the SNS topic.                                                                                                                                                                                                                                      | `string` | `"website-notifications"` |    no    |
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| acm\_site\_certificate\_arn | ARN of an ACM certificate to use for https on the CloudFront distribution. | `any` | n/a | yes |
+| cloudfront\_price\_class | Price class for Cloudfront. | `string` | `"PriceClass_100"` | no |
+| create\_cloudfront\_distribution | Defines whether or not to create a CloudFront distribution for the S3 bucket. | `bool` | `true` | no |
+| create\_public\_dns\_site\_record | If set to true, creates a public DNS record in your site\_tld hosted zone. If you do not already have a hosted zone for this TLD, you should set create\_public\_dns\_zone to true. Otherwise, this will try to create a record in an existing zone or fail. | `string` | `"true"` | no |
+| create\_public\_dns\_www\_record | Defines whether or not to create a WWW DNS record for the site. | `bool` | `false` | no |
+| create\_public\_dns\_zone | If set to true, creates a public hosted zone in Route53 for your site. | `string` | `"false"` | no |
+| create\_sns\_topic | Defines whether or not to create an SNS topic for notifications about events. | `bool` | `false` | no |
+| create\_www\_redirect\_bucket | Defines whether or not to create a www redirect S3 bucket. Default: true | `bool` | `true` | no |
+| error\_page\_object | The error page object for the Cloudfront/S3 distribution. | `string` | `"404.html"` | no |
+| log\_include\_cookies | Defines whether or not CloudFront should log cookies. Default: false. | `bool` | `false` | no |
+| root\_page\_object | The root page object for the Cloudfront/S3 distribution. | `string` | `"index.html"` | no |
+| site\_region | Region in which to provision the site. Default: us-east-1 | `string` | `"us-east-1"` | no |
+| site\_tld | TLD of the website you want to create. A bucket will be created that is named this. Note that the module will error out if this bucket already exists in AWS. Example: example.com | `any` | n/a | yes |
+| sns\_topic\_name | Name for the SNS topic. | `string` | `"website-notifications"` | no |
 
 ## Outputs
 
