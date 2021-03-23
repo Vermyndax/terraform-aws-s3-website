@@ -1,0 +1,33 @@
+name: Terraform CI
+on:
+  push:
+    branches:
+      - dev
+      - main
+  pull_request:
+
+env:
+  tf_in_automation: true
+  AWS_DEFAULT_REGION: us-east-1
+
+jobs:
+  defaults:
+    name: "Terraform CI"
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: hashicorp/setup-terraform@v1
+
+      - name: Terraform format
+        id: fmt
+        run: terraform fmt -check
+        continue-on-error: true
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color

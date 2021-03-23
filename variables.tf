@@ -10,29 +10,8 @@ variable "create_www_redirect_bucket" {
   default     = true
 }
 
-# variable "create_codecommit_repo" {
-#   description = "Defines whether or not to create a CodeCommit repo. Default: true. NOTE: If you choose false, early versions of this module likely require that you fork and modify the code to point the CodeDeploy/CodePipeline stuff to your own repo."
-#   default     = true
-# }
-
-variable "site_github_owner" {
-  description = "Owner ID of the Github Repo"
-  type        = string
-}
-
-variable "github_oauth_token" {
-  description = "Github oauth token"
-  type        = string
-}
-
-variable "site_branch" {
-  description = "Branch to deploy"
-  type        = string
-  default     = "master"
-}
-
 variable "create_cloudfront_distribution" {
-  description = "Defines whether or not to create a CloudFront distribution for the S3 bucket. Default: true."
+  description = "Defines whether or not to create a CloudFront distribution for the S3 bucket."
   default     = true
 }
 
@@ -42,8 +21,8 @@ variable "log_include_cookies" {
 }
 
 variable "create_sns_topic" {
-  description = "Defines whether or not to create an SNS topic for notifications about events. Default: true."
-  default     = true
+  description = "Defines whether or not to create an SNS topic for notifications about events."
+  default     = false
 }
 
 variable "sns_topic_name" {
@@ -56,91 +35,35 @@ variable "site_tld" {
 }
 
 variable "create_public_dns_zone" {
-  description = "If set to true, creates a public hosted zone in Route53 for your site. Default: false."
+  description = "If set to true, creates a public hosted zone in Route53 for your site."
   default     = "false"
 }
 
 variable "create_public_dns_site_record" {
-  description = "If set to true, creates a public DNS record in your site_tld hosted zone. If you do not already have a hosted zone for this TLD, you should set create_public_dns_zone to true. Otherwise, this will try to create a record in an existing zone or fail. Default: true."
+  description = "If set to true, creates a public DNS record in your site_tld hosted zone. If you do not already have a hosted zone for this TLD, you should set create_public_dns_zone to true. Otherwise, this will try to create a record in an existing zone or fail."
   default     = "true"
 }
 
 variable "create_public_dns_www_record" {
-  description = "Defines whether or not to create a WWW DNS record for the site. Default: false."
+  description = "Defines whether or not to create a WWW DNS record for the site."
   default     = false
 }
 
-variable "site_secret" {
-  description = "A secret to be used between S3 and CloudFront to manage web access. This will be put in the bucket policy and CloudFront distribution. Required."
-}
-
-variable "codepipeline_kms_key_arn" {
-  description = "The ARN of a KMS key to use with the CodePipeline and S3 artifacts bucket. If you do not specify an ARN, we'll create a KMS key for you and use it."
-  default     = ""
-}
-
-variable "codecommit_repo_name" {
-  description = "CodeCommit repo name. If this is defined, it will be created with this name. If you do not define it, we'll create one that matches the name of site_tld variable."
-  default     = ""
-}
-
-variable "build_timeout" {
-  description = "Build timeout for the build stage (in minutes). Default: 5"
-  default     = "5"
-}
-
-variable "build_compute_type" {
-  description = "Build instance type to use for the CodeBuild project. Default: BUILD_GENERAL1_SMALL."
-  default     = "BUILD_GENERAL1_SMALL"
-}
-
-variable "build_image" {
-  description = "Managed build image for CodeBuild. Default: aws/codebuild/ubuntu-base:14.04"
-  default     = "aws/codebuild/ubuntu-base:14.04"
-}
-
-variable "test_compute_type" {
-  description = "Build instance type to use for the CodeBuild project. Default: BUILD_GENERAL1_SMALL."
-  default     = "BUILD_GENERAL1_SMALL"
-}
-
-variable "test_image" {
-  description = "Managed build image for CodeBuild. Default: aws/codebuild/ubuntu-base:14.04"
-  default     = "aws/codebuild/ubuntu-base:14.04"
-}
-
-variable "build_privileged_override" {
-  description = "Set the build privileged override to 'true' if you are not using a CodeBuild supported Docker base image. This is only relevant to building Docker images."
-  default     = "false"
-}
-
-variable "test_buildspec" {
-  description = "The buildspec to be used for the Test stage (default: buildspec_test.yml). This file should exist in the root of your CodeCommit or Git repo."
-  default     = "buildspec_test.yml"
-}
-
-variable "package_buildspec" {
-  description = "The buildspec to be used for the Build stage (default: buildspec.yml). This file should exist in the root of your CodeCommit or Git repo."
-  default     = "buildspec.yml"
-}
-
 variable "root_page_object" {
-  description = "The root page object for the Cloudfront/S3 distribution. Default: index.html"
+  description = "The root page object for the Cloudfront/S3 distribution."
   default     = "index.html"
 }
 
 variable "error_page_object" {
-  description = "The error page object for the Cloudfront/S3 distribution. Default: 404.html"
+  description = "The error page object for the Cloudfront/S3 distribution."
   default     = "404.html"
 }
 
 variable "cloudfront_price_class" {
-  description = "Price class for Cloudfront. Default: PriceClass_100"
+  description = "Price class for Cloudfront."
   default     = "PriceClass_100"
 }
 
 variable "acm_site_certificate_arn" {
-  description = "ARN of an ACM certificate to use for https on the CloudFront distribution. Required."
+  description = "ARN of an ACM certificate to use for https on the CloudFront distribution."
 }
-
-# TODO: Support names for the rest of the resources?

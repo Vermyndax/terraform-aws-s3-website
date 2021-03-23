@@ -3,24 +3,28 @@
 # This project is used on https://galaxycow.com for a Hugo publishing workflow.
 # Acknowledgements for code snippets:
 # Secret idea/code from: https://github.com/ringods/terraform-website-s3-cloudfront-route53/blob/master/site-main/website_bucket_policy.json
-# CodeBuild/CodePipeline from: https://github.com/slalompdx/terraform-aws-codecommit-cicd/blob/master/main.tf
 # Support those authors and open source!
 
 # TODO: Add more parameterization to CloudFront
 # TODO: Add lifecycle policies to S3 buckets
-
-terraform {
-  required_version = ">= 0.12.25" # I went to 12.8 and ugh might as well peel my nails off
-}
-
 locals {
   # site_codecommit_repo_name = var.codecommit_repo_name != "" ? var.codecommit_repo_name : var.site_tld
   site_tld_shortname = replace(var.site_tld, ".", "")
 }
 
+resource "random_uuid" "random_bucket_name" {
+  # This will generate a random bucket name to avoid possible security issues.
+}
+
+resource "random_password" "random_site_secret" {
+  length           = 32
+  special          = true
+  override_special = "_%@"
+}
+
 # S3 bucket for website, public hosting
 resource "aws_s3_bucket" "main_site" {
-  bucket = var.site_tld
+  bucket = random_uuid.random_bucket_name.result
   # region = var.site_region
 
   policy = <<EOF
@@ -34,13 +38,13 @@ resource "aws_s3_bucket" "main_site" {
         "s3:GetObject"
       ],
       "Effect": "Allow",
-      "Resource": "arn:aws:s3:::${var.site_tld}/*",
+      "Resource": "arn:aws:s3:::${random_uuid.random_bucket_name.result}/*",
       "Principal": {
           "AWS":"*"
         },
       "Condition": {
         "StringEquals": {
-          "aws:UserAgent": "${var.site_secret}"
+          "aws:UserAgent": "${random_password.random_site_secret.result}"
         }
       }
     }
@@ -61,7 +65,7 @@ EOF
 # S3 bucket for www redirect (optional)
 resource "aws_s3_bucket" "site_www_redirect" {
   count  = var.create_www_redirect_bucket == "true" ? 1 : 0
-  bucket = "www.${var.site_tld}"
+  bucket = "www.${random_uuid.random_bucket_name.result}"
   # region = var.site_region
   acl = "private"
 
@@ -74,17 +78,6 @@ resource "aws_s3_bucket" "site_www_redirect" {
   }
 }
 
-# S3 bucket for website artifacts
-resource "aws_s3_bucket" "site_artifacts" {
-  bucket = "${var.site_tld}-code-artifacts"
-  # region = var.site_region
-  acl = "private"
-
-  tags = {
-    Website-artifacts = var.site_tld
-  }
-}
-
 # S3 bucket for CloudFront logging
 resource "aws_s3_bucket" "site_cloudfront_logs" {
   bucket = "${var.site_tld}-cloudfront-logs"
@@ -92,366 +85,11 @@ resource "aws_s3_bucket" "site_cloudfront_logs" {
   acl = "private"
 }
 
-# Should give a parameter to create
-# CloudFront should accept a parameter for S3 logging bucket and if it doesn't exist, then create one
-
-# CodeCommit repo (optional)
-# resource "aws_codecommit_repository" "codecommit_site_repo" {
-#   count           = var.create_codecommit_repo == "true" ? 1 : 0
-#   repository_name = local.site_codecommit_repo_name
-#   description     = "This is the default repo for ${var.site_tld}"
-#   default_branch  = "master"
-# }
-
-# resource "aws_codecommit_trigger" "codecommit_notifications" {
-#   depends_on = [
-#     aws_codecommit_repository.codecommit_site_repo,
-#     aws_sns_topic.sns_topic,
-#   ]
-#   repository_name = local.site_codecommit_repo_name
-
-#   trigger {
-#     name            = "notifyevents"
-#     events          = ["all"]
-#     destination_arn = aws_sns_topic.sns_topic[0].arn
-#   }
-# }
-
-# IAM roles for CodeCommit/CodeDeploy
-resource "aws_iam_role" "codepipeline_iam_role" {
-  name = "${var.site_tld}-codepipeline-role"
-
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "codepipeline.amazonaws.com"
-      },
-      "Action": "sts:AssumeRole"
-    }
-  ]
-}
-EOF
-
-}
-
-resource "aws_iam_role_policy" "codepipeline_policy" {
-  name = "${var.site_tld}-codepipeline-policy"
-  role = aws_iam_role.codepipeline_iam_role.id
-
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "s3:*"
-      ],
-      "Resource": [
-        "${aws_s3_bucket.site_artifacts.arn}",
-        "${aws_s3_bucket.site_artifacts.arn}/*"
-      ]
-    },
-    {
-      "Effect": "Allow",
-      "Action": [
-        "codebuild:BatchGetBuilds",
-        "codebuild:StartBuild"
-      ],
-      "Resource": "*"
-    },
-    {
-      "Action": [
-        "kms:DescribeKey",
-        "kms:GenerateDataKey*",
-        "kms:Encrypt",
-        "kms:ReEncrypt*",
-        "kms:Decrypt"
-      ],
-      "Resource": "${aws_kms_key.codepipeline_kms_key[0].arn}",
-      "Effect": "Allow"
-    },
-    {
-      "Action": [
-        "sns:Publish"
-      ],
-      "Resource": "${aws_sns_topic.sns_topic[0].arn}",
-      "Effect": "Allow"
-    }
-  ]
-}
-EOF
-
-}
-
-resource "aws_kms_key" "codepipeline_kms_key" {
-  count                   = var.codepipeline_kms_key_arn == "" ? 1 : 0
-  description             = "KMS key to encrypt CodePipeline and S3 artifact bucket at rest for ${var.site_tld}"
-  deletion_window_in_days = 30
-  enable_key_rotation     = "true"
-}
-
-resource "aws_kms_alias" "codepipeline_kms_key_name" {
-  count         = var.codepipeline_kms_key_arn == "" ? 1 : 0
-  name          = "alias/codepipeline-${local.site_tld_shortname}"
-  target_key_id = aws_kms_key.codepipeline_kms_key[0].key_id
-}
-
-# CodeBuild IAM Permissions
-resource "aws_iam_role" "codebuild_assume_role" {
-  name = "${var.site_tld}-codebuild-role"
-
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "codebuild.amazonaws.com"
-      },
-      "Action": "sts:AssumeRole"
-    }
-  ]
-}
-EOF
-
-}
-
-resource "aws_iam_role_policy" "codebuild_policy" {
-  name = "${var.site_tld}-codebuild-policy"
-  role = aws_iam_role.codebuild_assume_role.id
-
-  policy = <<POLICY
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": [
-       "s3:PutObject",
-       "s3:GetObject",
-       "s3:GetObjectVersion",
-       "s3:GetBucketVersioning"
-      ],
-      "Resource": "*",
-      "Effect": "Allow"
-    },
-    {
-      "Action": [
-          "s3:*"
-      ],
-      "Resource": [
-        "${aws_s3_bucket.site_artifacts.arn}",
-        "${aws_s3_bucket.site_artifacts.arn}/*",
-        "${aws_s3_bucket.main_site.arn}",
-        "${aws_s3_bucket.main_site.arn}/*"
-      ],
-      "Effect": "Allow"
-    },
-    {
-      "Action": [
-        "codebuild:*"
-      ],
-      "Resource": [
-        "${aws_codebuild_project.build_project.id}"
-      ],
-      "Effect": "Allow"
-    },
-    {
-      "Action": [
-        "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents"
-      ],
-      "Resource": [
-        "*"
-      ],
-      "Effect": "Allow"
-    },
-    {
-      "Action": [
-        "kms:DescribeKey",
-        "kms:GenerateDataKey*",
-        "kms:Encrypt",
-        "kms:ReEncrypt*",
-        "kms:Decrypt"
-      ],
-      "Resource": "${aws_kms_key.codepipeline_kms_key[0].arn}",
-      "Effect": "Allow"
-    },
-    {
-      "Action": [
-        "sns:Publish"
-      ],
-      "Resource": "${aws_sns_topic.sns_topic[0].arn}",
-      "Effect": "Allow"
-    },
-    {
-      "Action": [
-        "cloudfront:CreateInvalidation"
-      ],
-      "Resource": "*",
-      "Effect": "Allow"
-    }
-  ]
-}
-POLICY
-
-}
-
-resource "aws_codebuild_project" "build_project" {
-  name           = "${local.site_tld_shortname}-build"
-  description    = "The CodeBuild build project for ${var.site_tld}"
-  service_role   = aws_iam_role.codebuild_assume_role.arn
-  build_timeout  = var.build_timeout
-  encryption_key = aws_kms_key.codepipeline_kms_key[0].arn
-
-  artifacts {
-    type = "CODEPIPELINE"
-  }
-
-  environment {
-    compute_type    = var.build_compute_type
-    image           = var.build_image
-    type            = "LINUX_CONTAINER"
-    privileged_mode = var.build_privileged_override
-  }
-
-  source {
-    type      = "CODEPIPELINE"
-    buildspec = var.package_buildspec
-  }
-}
-
-resource "aws_codebuild_project" "test_project" {
-  name           = "${local.site_tld_shortname}-test"
-  description    = "The CodeBuild test project for ${var.site_tld}"
-  service_role   = aws_iam_role.codebuild_assume_role.arn
-  build_timeout  = var.build_timeout
-  encryption_key = aws_kms_key.codepipeline_kms_key[0].arn
-
-  artifacts {
-    type = "CODEPIPELINE"
-  }
-
-  environment {
-    compute_type    = var.test_compute_type
-    image           = var.test_image
-    type            = "LINUX_CONTAINER"
-    privileged_mode = var.build_privileged_override
-  }
-
-  source {
-    type      = "CODEPIPELINE"
-    buildspec = var.test_buildspec
-  }
-}
-
-# CodePipeline for deployment from GitHub to public site
-# Stages are configured in the CodePipeline object below. Add stages and referring CodeBuild projects above as necessary. Note that by default, the test stage is commented out, today.
-resource "aws_codepipeline" "site_codepipeline" {
-  name     = "${var.site_tld}-codepipeline-provisioner"
-  role_arn = aws_iam_role.codepipeline_iam_role.arn
-
-  artifact_store {
-    location = aws_s3_bucket.site_artifacts.bucket
-    type     = "S3"
-
-    encryption_key {
-      id   = aws_kms_alias.codepipeline_kms_key_name[0].arn
-      type = "KMS"
-    }
-  }
-
-  lifecycle {
-    ignore_changes = [stage[0]]
-  }
-
-  # stage {
-  #   name = "Source"
-
-  #   action {
-  #     name             = "Source"
-  #     category         = "Source"
-  #     owner            = "AWS"
-  #     provider         = "CodeCommit"
-  #     version          = "1"
-  #     output_artifacts = ["${local.site_tld_shortname}-artifacts"]
-
-  #     configuration = {
-  #       RepositoryName = local.site_codecommit_repo_name
-  #       BranchName     = "master"
-  #     }
-  #   }
-  # }
-
-  stage {
-    name = "Source"
-
-    action {
-      name     = "Source"
-      category = "Source"
-
-      owner            = "ThirdParty"
-      provider         = "GitHub"
-      version          = "1"
-      output_artifacts = ["${local.site_tld_shortname}-artifacts"]
-
-      configuration = {
-        Owner      = var.site_github_owner
-        Repo       = var.site_tld
-        Branch     = var.site_branch
-        OAuthToken = var.github_oauth_token
-      }
-    }
-  }
-
-  stage {
-    name = "Test"
-
-    action {
-      name             = "Test"
-      category         = "Test"
-      owner            = "AWS"
-      provider         = "CodeBuild"
-      input_artifacts  = ["${local.site_tld_shortname}-artifacts"]
-      output_artifacts = ["${local.site_tld_shortname}-tested"]
-      version          = "1"
-
-      configuration = {
-        ProjectName = aws_codebuild_project.test_project.name
-      }
-    }
-  }
-
-  stage {
-    name = "Build"
-
-    action {
-      name             = "Build"
-      category         = "Build"
-      owner            = "AWS"
-      provider         = "CodeBuild"
-      input_artifacts  = ["${local.site_tld_shortname}-tested"]
-      output_artifacts = ["${local.site_tld_shortname}-build"]
-      version          = "1"
-
-      configuration = {
-        ProjectName = aws_codebuild_project.build_project.name
-      }
-    }
-  }
-}
-
 # CloudFront distribution
 resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
   origin {
     domain_name = aws_s3_bucket.main_site.website_endpoint
-    origin_id   = "origin-bucket-${var.site_tld}"
+    origin_id   = "origin-bucket-${random_uuid.random_bucket_name.result}"
 
     custom_origin_config {
       origin_protocol_policy = "http-only"
@@ -462,7 +100,7 @@ resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
 
     custom_header {
       name  = "User-Agent"
-      value = var.site_secret
+      value = random_password.random_site_secret.result
     }
   }
 
@@ -481,7 +119,7 @@ resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
   default_cache_behavior {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "origin-bucket-${var.site_tld}"
+    target_origin_id = "origin-bucket-${random_uuid.random_bucket_name.result}"
 
     forwarded_values {
       query_string = true
@@ -501,68 +139,13 @@ resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
   viewer_certificate {
     acm_certificate_arn      = var.acm_site_certificate_arn
     ssl_support_method       = "sni-only"
-    minimum_protocol_version = "TLSv1.1_2016"
+    minimum_protocol_version = "TLSv1.2_2018"
   }
 
   restrictions {
     geo_restriction {
       restriction_type = "none"
     }
-  }
-}
-
-# SNS to support notifications for commit and build events
-resource "aws_sns_topic" "sns_topic" {
-  count = var.create_sns_topic == "true" ? 1 : 0
-  name  = var.sns_topic_name
-  # kms_master_key_id = "alias/codepipeline-${local.site_tld_shortname}"
-}
-
-# SNS notifications for pipeline
-resource "aws_cloudwatch_event_rule" "pipeline_events" {
-  name        = "${local.site_tld_shortname}-pipeline-notifications"
-  description = "Alert on ${aws_codepipeline.site_codepipeline.name} events"
-
-  event_pattern = <<PATTERN
-{
-  "source": [
-    "aws.codepipeline"
-  ],
-  "detail-type": [
-    "CodePipeline Pipeline Execution State Change"
-  ],
-  "detail": {
-    "pipeline": [
-      "${aws_codepipeline.site_codepipeline.name}"
-    ]
-  }
-}
-PATTERN
-
-}
-
-resource "aws_cloudwatch_event_target" "sns" {
-  rule      = aws_cloudwatch_event_rule.pipeline_events.name
-  target_id = "SendToSNS"
-  arn       = aws_sns_topic.sns_topic[0].arn
-}
-
-resource "aws_sns_topic_policy" "default_sns_policy" {
-  arn    = aws_sns_topic.sns_topic[0].arn
-  policy = data.aws_iam_policy_document.sns_topic_policy.json
-}
-
-data "aws_iam_policy_document" "sns_topic_policy" {
-  statement {
-    effect  = "Allow"
-    actions = ["SNS:Publish"]
-
-    principals {
-      type        = "Service"
-      identifiers = ["events.amazonaws.com", "codestar-notifications.amazonaws.com"]
-    }
-
-    resources = [aws_sns_topic.sns_topic[0].arn]
   }
 }
 
