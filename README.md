@@ -4,6 +4,10 @@
 
 ## Changelog
 
+### 03/22/21
+
+* Added a public access block for the CloudFront logging bucket.
+
 ### 03/20/21
 
 * Did a pretty massive refactoring of this module. If you used this module in the past to deploy CodePipeline stuff, DO NOT USE THIS RELEASE.
@@ -77,6 +81,7 @@ No Modules.
 | [aws_route53_zone](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone) |
 | [aws_route53_zone](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_zone) |
 | [aws_s3_bucket](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket) |
+| [aws_s3_bucket_public_access_block](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_public_access_block) |
 | [random_password](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/password) |
 | [random_uuid](https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/uuid) |
 
