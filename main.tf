@@ -85,6 +85,15 @@ resource "aws_s3_bucket" "site_cloudfront_logs" {
   acl = "private"
 }
 
+resource "aws_s3_bucket_public_access_block" "cloudfront_logs_block" {
+  bucket = aws_s3_bucket.site_cloudfront_logs.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
 # CloudFront distribution
 resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
   origin {
