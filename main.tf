@@ -79,12 +79,21 @@ resource "aws_s3_bucket" "site_www_redirect" {
 }
 
 # S3 bucket for CloudFront logging
+
+data "aws_canonical_user_id" "current" {}
+
 resource "aws_s3_bucket" "site_cloudfront_logs" {
   bucket = "${var.site_tld}-cloudfront-logs"
   # region = var.site_region
   # acl = "private"
   grant {
     id          = "c4c1ede66af53448b93c283ce9448c4ba468c9432aa01d700d3878632f77d2d0" # This is set by AWS, hope they never ever change it.
+    type        = "CanonicalUser"
+    permissions = ["FULL_CONTROL"]
+  }
+
+  grant {
+    id          = data.aws_canonical_user_id.current.id
     type        = "CanonicalUser"
     permissions = ["FULL_CONTROL"]
   }
