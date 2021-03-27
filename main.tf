@@ -266,37 +266,37 @@ resource "aws_iam_user_policy" "content_sync_policy" {
             "waf:GetWebACL",
             "waf:ListWebACLs"
           ],
-          Resource": "${aws_cloudfront_distribution.site_cloudfront_distribution.arn}"
-        }
-        {
-            "Sid": "BucketStuff",
-            "Effect": "Allow",
-            "Action": [
-                "s3:GetBucketTagging",
-                "s3:ListBucket",
-                "s3:GetBucketLocation"
-            ],
-            "Resource": "arn:aws:s3:::${random_uuid.random_bucket_name.result}"
+          "Resource": "${aws_cloudfront_distribution.site_cloudfront_distribution.arn}"
         },
         {
-            "Sid": "ObjectStuff",
-            "Effect": "Allow",
-            "Action": [
-                "s3:PutObject",
-                "s3:GetObject",
-                "s3:DeleteObject"
-            ],
-            "Resource": [
-                "arn:aws:s3:::${random_uuid.random_bucket_name.result}/*",
-                "arn:aws:s3:::${random_uuid.random_bucket_name.result}"
-            ]
+          "Sid": "BucketStuff",
+          "Effect": "Allow",
+          "Action": [
+              "s3:GetBucketTagging",
+              "s3:ListBucket",
+              "s3:GetBucketLocation"
+          ],
+          "Resource": "arn:aws:s3:::${random_uuid.random_bucket_name.result}"
         },
         {
-            "Sid": "HighLevelStuff",
-            "Effect": "Allow",
-            "Action": "s3:ListAllMyBuckets",
-            "Resource": "*"
-        }
+          "Sid": "ObjectStuff",
+          "Effect": "Allow",
+          "Action": [
+              "s3:PutObject",
+              "s3:GetObject",
+              "s3:DeleteObject"
+          ],
+          "Resource": [
+              "arn:aws:s3:::${random_uuid.random_bucket_name.result}/*",
+              "arn:aws:s3:::${random_uuid.random_bucket_name.result}"
+          ]
+        },
+      {
+          "Sid": "HighLevelStuff",
+          "Effect": "Allow",
+          "Action": "s3:ListAllMyBuckets",
+          "Resource": "*"
+      }
     ]
 }
 EOF
