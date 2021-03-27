@@ -247,6 +247,28 @@ resource "aws_iam_user_policy" "content_sync_policy" {
     "Version": "2012-10-17",
     "Statement": [
         {
+          "Sid": "CloudFrontStuff",
+          "Effect": "Allow",
+          "Action": [
+            "acm:ListCertificates", 
+            "cloudfront:GetDistribution",
+            "cloudfront:GetStreamingDistribution",
+            "cloudfront:GetDistributionConfig",
+            "cloudfront:ListDistributions",
+            "cloudfront:ListCloudFrontOriginAccessIdentities",
+            "cloudfront:CreateInvalidation",
+            "cloudfront:GetInvalidation",
+            "cloudfront:ListInvalidations",
+            "elasticloadbalancing:DescribeLoadBalancers",
+            "iam:ListServerCertificates",
+            "sns:ListSubscriptionsByTopic",
+            "sns:ListTopics",
+            "waf:GetWebACL",
+            "waf:ListWebACLs"
+          ],
+          Resource": "${aws_cloudfront_distribution.site_cloudfront_distribution.arn}"
+        }
+        {
             "Sid": "BucketStuff",
             "Effect": "Allow",
             "Action": [
