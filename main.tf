@@ -244,24 +244,38 @@ resource "aws_iam_user_policy" "content_sync_policy" {
 
   policy = <<EOF
 {
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": [
-        "s3:ListAllMyBuckets",
-        "s3:GetBucketLocation",
-        "s3:GetBucketTagging",
-        "s3:PutObject",
-        "s3:GetObject",
-        "s3:DeleteObject"
-      ],
-      "Effect": "Allow",
-      "Resource": [
-        "arn:aws:s3:::${random_uuid.random_bucket_name.result}/*",
-        "arn:aws:s3:::${random_uuid.random_bucket_name.result}*"
-      ]
-    }
-  ]
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "BucketStuff",
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetBucketTagging",
+                "s3:ListBucket",
+                "s3:GetBucketLocation"
+            ],
+            "Resource": "arn:aws:s3:::${random_uuid.random_bucket_name.result}"
+        },
+        {
+            "Sid": "ObjectStuff",
+            "Effect": "Allow",
+            "Action": [
+                "s3:PutObject",
+                "s3:GetObject",
+                "s3:DeleteObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::${random_uuid.random_bucket_name.result}/*",
+                "arn:aws:s3:::${random_uuid.random_bucket_name.result}"
+            ]
+        },
+        {
+            "Sid": "HighLevelStuff",
+            "Effect": "Allow",
+            "Action": "s3:ListAllMyBuckets",
+            "Resource": "*"
+        }
+    ]
 }
 EOF
 }
