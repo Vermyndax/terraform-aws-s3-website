@@ -79,7 +79,7 @@ resource "aws_s3_bucket_public_access_block" "content_bucket_block" {
 
 # S3 bucket for www redirect (optional)
 resource "aws_s3_bucket" "site_www_redirect" {
-  count  = var.create_www_redirect_bucket == "true" ? 1 : 0
+  count  = var.create_www_redirect_bucket == true ? 1 : 0
   bucket = "www.${random_uuid.random_bucket_name.result}"
   # region = var.site_region
   acl = "private"
@@ -190,7 +190,7 @@ resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
 # DNS entry pointing to public site - optional
 
 resource "aws_route53_zone" "primary_site_tld" {
-  count = var.create_public_dns_zone == "true" ? 1 : 0
+  count = var.create_public_dns_zone == true ? 1 : 0
   name  = var.site_tld
 }
 
@@ -199,7 +199,7 @@ data "aws_route53_zone" "site_tld_selected" {
 }
 
 resource "aws_route53_record" "site_tld_record" {
-  count   = var.create_public_dns_site_record == "true" ? 1 : 0
+  count   = var.create_public_dns_site_record == true ? 1 : 0
   zone_id = data.aws_route53_zone.site_tld_selected.zone_id
   name    = "${var.site_tld}."
   type    = "A"
@@ -212,7 +212,7 @@ resource "aws_route53_record" "site_tld_record" {
 }
 
 resource "aws_route53_record" "site_www_record" {
-  count   = var.create_public_dns_www_record == "true" ? 1 : 0
+  count   = var.create_public_dns_www_record == true ? 1 : 0
   zone_id = data.aws_route53_zone.site_tld_selected.zone_id
   name    = "www"
   type    = "CNAME"
