@@ -72,3 +72,9 @@ variable "cloudfront_price_class" {
 variable "acm_site_certificate_arn" {
   description = "ARN of an ACM certificate to use for https on the CloudFront distribution."
 }
+
+variable "create_content_sync_user" {
+  type        = bool
+  description = "Optionally create an IAM user and access keys to sync the content bucket. Note that this will store access information in your state file. Protect it accordingly."
+  default     = false
+}

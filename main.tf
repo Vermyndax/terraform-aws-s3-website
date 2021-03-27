@@ -221,3 +221,47 @@ resource "aws_route53_record" "site_www_record" {
   records = [var.site_tld]
 }
 
+# Optional content sync user
+
+resource "aws_iam_user" "content_sync" {
+  count = var.create_content_sync_user == true ? 1 : 0
+  name  = "${var.site_tld}-content-sync-user"
+
+  /* tags = {
+    tag-key = "tag-value"
+  } */
+}
+
+resource "aws_iam_access_key" "content_sync_key" {
+  count = var.create_content_sync_user == true ? 1 : 0
+  user  = aws_iam_user.content_sync.name
+}
+
+resource "aws_iam_user_policy" "content_sync_policy" {
+  count = var.create_content_sync_user == true ? 1 : 0
+  name  = "${var.site_tld}-content-sync-policy"
+  user  = aws_iam_user.content_sync.name
+
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "s3:ListAllMyBuckets",
+        "s3:GetBucketLocation",
+        "s3:GetBucketTagging",
+        "s3:PutObject",
+        "s3:GetObject",
+        "s3:DeleteObject"
+      ],
+      "Effect": "Allow",
+      "Resource": [
+        "arn:aws:s3:::${random_uuid.random_bucket_name.result}/*",
+        "arn:aws:s3:::${random_uuid.random_bucket_name.result}*",
+      ]
+    }
+  ]
+}
+EOF
+}
