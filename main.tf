@@ -258,7 +258,7 @@ resource "aws_iam_user_policy" "content_sync_policy" {
       "Effect": "Allow",
       "Resource": [
         "arn:aws:s3:::${random_uuid.random_bucket_name.result}/*",
-        "arn:aws:s3:::${random_uuid.random_bucket_name.result}*",
+        "arn:aws:s3:::${random_uuid.random_bucket_name.result}*"
       ]
     }
   ]
