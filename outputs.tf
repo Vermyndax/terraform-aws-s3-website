@@ -13,3 +13,8 @@ output "content_sync_bucket_name" {
   value       = random_uuid.random_bucket_name.result
   description = "Bucket name that contains the content for the site."
 }
+
+output "cloudfront_distribution_id" {
+  value       = aws_cloudfront_distribution.site_cloudfront_distribution.id
+  description = "CloudFront distribution ID."
+}
