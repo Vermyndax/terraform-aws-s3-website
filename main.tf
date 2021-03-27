@@ -57,6 +57,11 @@ EOF
     index_document = var.root_page_object
     error_document = var.error_page_object
   }
+
+  versioning {
+    enabled = var.content_bucket_versioning
+  }
+
   # tags {
   # }
   # force_destroy = true

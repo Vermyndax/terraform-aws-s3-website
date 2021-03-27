@@ -6,7 +6,12 @@ variable "site_region" {
 }
 
 variable "create_www_redirect_bucket" {
-  description = "Defines whether or not to create a www redirect S3 bucket. Default: true"
+  description = "Defines whether or not to create a www redirect S3 bucket."
+  default     = true
+}
+
+variable "content_bucket_versioning" {
+  description = "Defines whether or not to set versioning on the content bucket."
   default     = true
 }
 
@@ -16,7 +21,7 @@ variable "create_cloudfront_distribution" {
 }
 
 variable "log_include_cookies" {
-  description = "Defines whether or not CloudFront should log cookies. Default: false."
+  description = "Defines whether or not CloudFront should log cookies."
   default     = false
 }
 
