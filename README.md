@@ -98,14 +98,15 @@ No modules.
 |------|-------------|------|---------|:--------:|
 | <a name="input_acm_site_certificate_arn"></a> [acm\_site\_certificate\_arn](#input\_acm\_site\_certificate\_arn) | ARN of an ACM certificate to use for https on the CloudFront distribution. | `any` | n/a | yes |
 | <a name="input_cloudfront_price_class"></a> [cloudfront\_price\_class](#input\_cloudfront\_price\_class) | Price class for Cloudfront. | `string` | `"PriceClass_100"` | no |
+| <a name="input_content_bucket_versioning"></a> [content\_bucket\_versioning](#input\_content\_bucket\_versioning) | Defines whether or not to set versioning on the content bucket. | `bool` | `true` | no |
 | <a name="input_create_cloudfront_distribution"></a> [create\_cloudfront\_distribution](#input\_create\_cloudfront\_distribution) | Defines whether or not to create a CloudFront distribution for the S3 bucket. | `bool` | `true` | no |
 | <a name="input_create_public_dns_site_record"></a> [create\_public\_dns\_site\_record](#input\_create\_public\_dns\_site\_record) | If set to true, creates a public DNS record in your site\_tld hosted zone. If you do not already have a hosted zone for this TLD, you should set create\_public\_dns\_zone to true. Otherwise, this will try to create a record in an existing zone or fail. | `string` | `"true"` | no |
 | <a name="input_create_public_dns_www_record"></a> [create\_public\_dns\_www\_record](#input\_create\_public\_dns\_www\_record) | Defines whether or not to create a WWW DNS record for the site. | `bool` | `false` | no |
 | <a name="input_create_public_dns_zone"></a> [create\_public\_dns\_zone](#input\_create\_public\_dns\_zone) | If set to true, creates a public hosted zone in Route53 for your site. | `string` | `"false"` | no |
 | <a name="input_create_sns_topic"></a> [create\_sns\_topic](#input\_create\_sns\_topic) | Defines whether or not to create an SNS topic for notifications about events. | `bool` | `false` | no |
-| <a name="input_create_www_redirect_bucket"></a> [create\_www\_redirect\_bucket](#input\_create\_www\_redirect\_bucket) | Defines whether or not to create a www redirect S3 bucket. Default: true | `bool` | `true` | no |
+| <a name="input_create_www_redirect_bucket"></a> [create\_www\_redirect\_bucket](#input\_create\_www\_redirect\_bucket) | Defines whether or not to create a www redirect S3 bucket. | `bool` | `true` | no |
 | <a name="input_error_page_object"></a> [error\_page\_object](#input\_error\_page\_object) | The error page object for the Cloudfront/S3 distribution. | `string` | `"404.html"` | no |
-| <a name="input_log_include_cookies"></a> [log\_include\_cookies](#input\_log\_include\_cookies) | Defines whether or not CloudFront should log cookies. Default: false. | `bool` | `false` | no |
+| <a name="input_log_include_cookies"></a> [log\_include\_cookies](#input\_log\_include\_cookies) | Defines whether or not CloudFront should log cookies. | `bool` | `false` | no |
 | <a name="input_root_page_object"></a> [root\_page\_object](#input\_root\_page\_object) | The root page object for the Cloudfront/S3 distribution. | `string` | `"index.html"` | no |
 | <a name="input_site_region"></a> [site\_region](#input\_site\_region) | Region in which to provision the site. Default: us-east-1 | `string` | `"us-east-1"` | no |
 | <a name="input_site_tld"></a> [site\_tld](#input\_site\_tld) | TLD of the website you want to create. A bucket will be created that is named this. Note that the module will error out if this bucket already exists in AWS. Example: example.com | `any` | n/a | yes |
