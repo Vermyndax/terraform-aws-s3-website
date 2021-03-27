@@ -62,6 +62,16 @@ EOF
   # force_destroy = true
 }
 
+resource "aws_s3_bucket_public_access_block" "content_bucket_block" {
+  bucket = aws_s3_bucket.main_site.id
+
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
+
 # S3 bucket for www redirect (optional)
 resource "aws_s3_bucket" "site_www_redirect" {
   count  = var.create_www_redirect_bucket == "true" ? 1 : 0
