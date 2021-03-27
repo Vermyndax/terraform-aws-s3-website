@@ -120,4 +120,5 @@ No modules.
 |------|-------------|
 | <a name="output_content_sync_access_key"></a> [content\_sync\_access\_key](#output\_content\_sync\_access\_key) | Access key ID of the optional content sync user. |
 | <a name="output_content_sync_access_secret"></a> [content\_sync\_access\_secret](#output\_content\_sync\_access\_secret) | Secret Access key of the optional content sync user. This is marked as sensitive and will not show in plan output, but be aware that it is stored in your state file. Encrypt accordingly. |
+| <a name="output_content_sync_bucket_name"></a> [content\_sync\_bucket\_name](#output\_content\_sync\_bucket\_name) | Bucket name that contains the content for the site. |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
