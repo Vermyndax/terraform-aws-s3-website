@@ -234,13 +234,13 @@ resource "aws_iam_user" "content_sync" {
 
 resource "aws_iam_access_key" "content_sync_key" {
   count = var.create_content_sync_user == true ? 1 : 0
-  user  = aws_iam_user.content_sync.name
+  user  = aws_iam_user.content_sync[count.index].name
 }
 
 resource "aws_iam_user_policy" "content_sync_policy" {
   count = var.create_content_sync_user == true ? 1 : 0
   name  = "${var.site_tld}-content-sync-policy"
-  user  = aws_iam_user.content_sync.name
+  user  = aws_iam_user.content_sync[count.index].name
 
   policy = <<EOF
 {
