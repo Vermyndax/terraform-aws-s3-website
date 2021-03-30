@@ -82,6 +82,7 @@ No modules.
 | [aws_iam_access_key.content_sync_key](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_access_key) | resource |
 | [aws_iam_user.content_sync](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_user) | resource |
 | [aws_iam_user_policy.content_sync_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_user_policy) | resource |
+| [aws_route53_record.site_hostname_record](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_route53_record.site_tld_record](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_route53_record.site_www_record](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_route53_zone.primary_site_tld](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_zone) | resource |
@@ -111,8 +112,9 @@ No modules.
 | <a name="input_error_page_object"></a> [error\_page\_object](#input\_error\_page\_object) | The error page object for the Cloudfront/S3 distribution. | `string` | `"404.html"` | no |
 | <a name="input_log_include_cookies"></a> [log\_include\_cookies](#input\_log\_include\_cookies) | Defines whether or not CloudFront should log cookies. | `bool` | `false` | no |
 | <a name="input_root_page_object"></a> [root\_page\_object](#input\_root\_page\_object) | The root page object for the Cloudfront/S3 distribution. | `string` | `"index.html"` | no |
+| <a name="input_site_hostname"></a> [site\_hostname](#input\_site\_hostname) | Set this value if you want the site to have a name other than the TLD. | `string` | `null` | no |
 | <a name="input_site_region"></a> [site\_region](#input\_site\_region) | Region in which to provision the site. Default: us-east-1 | `string` | `"us-east-1"` | no |
-| <a name="input_site_tld"></a> [site\_tld](#input\_site\_tld) | TLD of the website you want to create. A bucket will be created that is named this. Note that the module will error out if this bucket already exists in AWS. Example: example.com | `string` | n/a | yes |
+| <a name="input_site_tld"></a> [site\_tld](#input\_site\_tld) | TLD of the website you want to create. Example: example.com | `string` | n/a | yes |
 
 ## Outputs
 

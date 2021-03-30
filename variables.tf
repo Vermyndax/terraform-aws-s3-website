@@ -32,7 +32,13 @@ variable "log_include_cookies" {
 
 variable "site_tld" {
   type        = string
-  description = "TLD of the website you want to create. A bucket will be created that is named this. Note that the module will error out if this bucket already exists in AWS. Example: example.com"
+  description = "TLD of the website you want to create. Example: example.com"
+}
+
+variable "site_hostname" {
+  type        = string
+  description = "Set this value if you want the site to have a name other than the TLD."
+  default     = null
 }
 
 variable "create_public_dns_zone" {

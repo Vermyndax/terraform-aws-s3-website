@@ -150,7 +150,7 @@ resource "aws_cloudfront_distribution" "site_cloudfront_distribution" {
 
   enabled             = true
   default_root_object = var.root_page_object
-  aliases             = [var.site_tld, "www.${var.site_tld}"]
+  aliases             = [var.site_tld, "www.${var.site_tld}", "${var.site_hostname}.${var.site_tld}"]
   price_class         = var.cloudfront_price_class
   retain_on_delete    = true
 
@@ -199,9 +199,22 @@ data "aws_route53_zone" "site_tld_selected" {
 }
 
 resource "aws_route53_record" "site_tld_record" {
-  count   = var.create_public_dns_site_record == true ? 1 : 0
+  count   = var.create_public_dns_site_record == true && var.site_hostname == null ? 1 : 0
   zone_id = data.aws_route53_zone.site_tld_selected.zone_id
   name    = "${var.site_tld}."
+  type    = "A"
+
+  alias {
+    name                   = aws_cloudfront_distribution.site_cloudfront_distribution.domain_name
+    zone_id                = aws_cloudfront_distribution.site_cloudfront_distribution.hosted_zone_id
+    evaluate_target_health = false
+  }
+}
+
+resource "aws_route53_record" "site_hostname_record" {
+  count   = var.create_public_dns_site_record == true && var.site_hostname != null ? 1 : 0
+  zone_id = data.aws_route53_zone.site_tld_selected.zone_id
+  name    = "${var.site_hostname}.${var.site_tld}."
   type    = "A"
 
   alias {
